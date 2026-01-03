@@ -13,9 +13,10 @@ jobs:
       contents: write # Required to create the lock branch
       pull-requests: write # Recommended for full functionality
     steps:
-      - name: ${{ 'lock' }} branch
+      - name: Lock branch
+        id: lock
         uses: JustinDFuller/github-action-lock-branch@v1
-          with:
-            lock: true ## required
-            token: ${{ secrets.LOCK_TOKEN }} # required
-            branch: github.event.pull_request.head.ref
+        with:
+          lock: true ## required
+          token: ${{ secrets.LOCK_TOKEN }} # required
+          branch: github.event.pull_request.head.ref

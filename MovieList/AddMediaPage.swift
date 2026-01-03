@@ -5,6 +5,8 @@ import SDWebImageSwiftUI
 struct AddMediaPage: View {
     @State private var newItemName: String = "" // Holds the input for the new item
     @State private var searchItems: [Movie] = [] // Holds the input for the new item
+    @State private var showPopup: Bool = false
+    @State private var popupText: String = ""
     
     var body: some View {
         NavigationView {
@@ -27,6 +29,19 @@ struct AddMediaPage: View {
                         searchItems = []
                     }
                     .padding()
+                }
+                
+                if(showPopup)
+                {
+                    VStack {
+                        Text(popupText)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        Button("Dismiss") {
+                            showPopup = false
+                        }
+                    }
+                    .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
                 }
                 
                 // List of items from search
@@ -226,7 +241,6 @@ struct AddMediaPage: View {
 
     // Function to add a new item
     private func addItem(movieToAdd: Movie) {
-        guard !newItemName.isEmpty else { return }
         let filename = "myMovieList.txt"
             
         // Get the document directory path
@@ -234,6 +248,8 @@ struct AddMediaPage: View {
             let fileURL = dir.appendingPathComponent(filename)
 
             guard let data = movieToAdd.getData().data(using: .utf8) else {
+                popupText = "Internal Error"
+                showPopup = true
                 print("Failed to convert string to data")
                 return
             }
@@ -243,11 +259,12 @@ struct AddMediaPage: View {
                 let text = try String(contentsOf: fileURL, encoding: .utf8)
                 let find = "*$*@*" + movieToAdd.id + "*$*@*"
                 if(text.contains(find)) {
-                    print("item already in list")
+                    popupText = "This item is already in your list!"
+                    showPopup = true
                     return
                 }
             }
-            catch { print("warning: file read failed!") }
+            catch { popupText = "Internal Error" ; showPopup = true ; print("warning: file read failed!") }
             
             // differnt writing
             if FileManager.default.fileExists(atPath: fileURL.path) {
@@ -258,6 +275,8 @@ struct AddMediaPage: View {
                     fileHandle.seekToEndOfFile() // Move the file pointer to the end
                     fileHandle.write(data) // Write the new data
                 } else {
+                    popupText = "Internal Error"
+                    showPopup = true
                     print("Failed to open file handle for writing")
                 }
             } else {
@@ -265,29 +284,14 @@ struct AddMediaPage: View {
                 do {
                     try data.write(to: fileURL, options: .atomic)
                 } catch {
+                    popupText = "Internal Error"
+                    showPopup = true
                     print("Failed to create file: \(error.localizedDescription)")
                 }
             }
         }
-        let scenes = UIApplication.shared.connectedScenes
-        guard let windowScene = scenes.first as? UIWindowScene,
-              let window = windowScene.windows.first
-        else { return }
-        if(movieToAdd.mediaType == "Movie")
-        {
-            window.rootViewController = UIHostingController(rootView: ContentView(category: "Movies", backNeeded: true))
-            window.makeKeyAndVisible()
-        }
-        else if(movieToAdd.mediaType == "TV")
-        {
-            window.rootViewController = UIHostingController(rootView: ContentView(category: "TV Shows", backNeeded: true))
-            window.makeKeyAndVisible()
-        }
-        else
-        {
-            window.rootViewController = UIHostingController(rootView: ContentView(category: "All", backNeeded: true))
-            window.makeKeyAndVisible()
-        }
+        popupText = movieToAdd.title+" was added to your list!"
+        showPopup = true
     }
 }
 

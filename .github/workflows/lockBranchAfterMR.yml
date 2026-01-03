@@ -1,0 +1,45 @@
+name: Lock Branch
+on:
+  pull_request:
+    types:
+      - closed
+    branches: main
+
+jobs:
+  if_merged:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create the lock branch
+      pull-requests: write # Recommended for full functionality
+    steps:
+      - name: ${{ 'lock' }} branch
+        uses: suzuki-shunsuke/lock-action@v1 # Use the action
+        with:
+          key: ${{ github.event.pull_request.head.ref }} # The branch name as the lock key
+          mode: ${{ 'lock' }} # 'lock' or 'unlock'
+
+
+
+
+
+
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: 'The name of the branch to lock'
+        required: true
+        default: 'main'
+      lock_mode:
+        description: 'Set to "lock" or "unlock"'
+        required: true
+        default: 'lock'
+
+jobs:
+  manage-lock:
+    runs-on: ubuntu-latest
+    
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Use the default GITHUB_TOKEN

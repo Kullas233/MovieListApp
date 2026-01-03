@@ -1,4 +1,4 @@
-name: Lock Branch
+name: Lock Branch After MR
 on:
   pull_request:
     types:
@@ -14,8 +14,8 @@ jobs:
       pull-requests: write # Recommended for full functionality
     steps:
       - name: ${{ 'lock' }} branch
-        uses: suzuki-shunsuke/lock-action@v1 # Use the action
-        with:
-          key: ${{ github.event.pull_request.head.ref }} # The branch name as the lock key
-          mode: ${{ 'lock' }} # 'lock' or 'unlock'
-          github_token: ${{ secrets.GITHUB_TOKEN }} # Use the default GITHUB_TOKEN
+        uses: JustinDFuller/github-action-lock-branch@v1
+          with:
+            lock: true ## required
+            token: ${{ secrets.LOCK_TOKEN }} # required
+            branch: github.event.pull_request.head.ref

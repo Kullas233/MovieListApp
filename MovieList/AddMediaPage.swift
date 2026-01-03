@@ -41,6 +41,7 @@ struct AddMediaPage: View {
                             showPopup = false
                         }
                     }
+                    .border(Color.black, width: 2)
                     .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
                 }
                 

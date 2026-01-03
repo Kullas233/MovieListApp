@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Lock branch
         id: lock
-        uses: JustinDFuller/github-action-lock-branch
+        uses: JustinDFuller/github-action-lock-branch@main
         with:
           lock: true ## required
           token: ${{ secrets.LOCK_TOKEN }} # required

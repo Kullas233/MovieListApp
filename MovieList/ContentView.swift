@@ -49,21 +49,8 @@ struct ContentView: View {
                 .padding()
             }
             .navigationTitle(category)
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                if(backNeeded)
-                {
-                    ToolbarItem(placement: .navigationBarLeading)
-                    {
-                        Button("Categories") {
-                            let scenes = UIApplication.shared.connectedScenes
-                            guard let windowScene = scenes.first as? UIWindowScene,
-                                  let window = windowScene.windows.first
-                            else { return }
-                            window.rootViewController = UIHostingController(rootView: MainPage())
-                            window.makeKeyAndVisible()
-                        }
-                    }
-                }
                 ToolbarItem(placement: .navigationBarTrailing)
                 {
                     EditButton()

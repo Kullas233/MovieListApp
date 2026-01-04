@@ -25,41 +25,41 @@ struct DetailView: View {
         Divider()
             .padding()
         
-        let screenSize: CGRect = UIScreen.main.bounds
-        VStack(alignment: .leading) {
-            // IMDb-like fields
-            ScrollView(.vertical) {
-
-                WebImage(url: URL(string: ImageURL)).resizable().frame(width: screenSize.width-20, height: (screenSize.width-20)/1.778, alignment: .center)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Title: \(Title)")
-                        .font(.headline)
+        GeometryReader { geometry in
+            VStack(alignment: .leading) {
+                // IMDb-like fields
+                ScrollView(.vertical) {
                     
-                    Text("Genre: \(Genre)")
-                        .font(.headline)
+                    WebImage(url: URL(string: ImageURL)).resizable().frame(width: geometry.size.width-20, height: (geometry.size.width-20)/1.778, alignment: .center)
                     
-                    Text("Release Date: \(ReleaseDate)")
-                        .font(.headline)
-                    
-                    Text("Popularity: \(Popularity)")
-                        .font(.headline)
-                    
-                    Text("Description:")
-                        .font(.headline)
-                        .padding(.bottom, -5)
-                    
-                    TextField(Description, text: $Description, axis: .vertical)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Title: \(Title)")
+                            .font(.headline)
+                        
+                        Text("Genre: \(Genre)")
+                            .font(.headline)
+                        
+                        Text("Release Date: \(ReleaseDate)")
+                            .font(.headline)
+                        
+                        Text("Popularity: \(Popularity)")
+                            .font(.headline)
+                        
+                        Text("Description:")
+                            .font(.headline)
+                            .padding(.bottom, -5)
+                        
+                        TextField(Description, text: $Description, axis: .vertical)
+                    }
+                    .padding()
+                    .frame(alignment: .center)
                 }
-                .padding()
-                .frame(alignment: .center)
-            }
-            .frame(maxWidth: screenSize.width, alignment: .center)
-            .onAppear {
-                loadMovieDetails()
+                .frame(maxWidth: geometry.size.width, alignment: .center)
+                .onAppear {
+                    loadMovieDetails()
+                }
             }
         }
-        .frame(maxWidth: screenSize.width)
     }
     // Function to simulate loading IMDb-like details
     private func loadMovieDetails() {

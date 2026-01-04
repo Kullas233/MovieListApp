@@ -11,54 +11,59 @@ struct ContentView: View {
     
     var body: some View
     {
-        NavigationStack {
-            VStack(alignment: .center) {
-                Text(category)
-                    .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
-            }
-            VStack {
-                // List of items with swipe-to-delete functionality
-                List {
-                    ForEach(allMovies, id: \.self) { movie in
-                        if(movie.mediaType == category.prefix(2) || movie.mediaType == category.prefix(category.count-1) || category == "All")
-                        {
-                            NavigationLink(destination: DetailView(movie: movie)) {
-                                let screenSize: CGRect = UIScreen.main.bounds
-                                HStack {
-                                    WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (screenSize.height/18)*(2/3), height: screenSize.height/18, alignment: .center)
-                                    
-                                    Text(movie.title)
-                                        .font(.title)
-                                    Text(movie.release)
+        GeometryReader { geometry in
+            NavigationStack {
+                VStack(alignment: .center) {
+                    Text(category)
+                        .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
+                }
+                VStack {
+                    // List of items with swipe-to-delete functionality
+                    List {
+                        ForEach(allMovies, id: \.self) { movie in
+                            if(movie.mediaType == category.prefix(2) || movie.mediaType == category.prefix(category.count-1) || category == "All")
+                            {
+                                NavigationLink(destination: DetailView(movie: movie)) {
+                                    HStack {
+                                        WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (geometry.size.height/18)*(2/3), height: geometry.size.height/18, alignment: .center)
+                                        
+                                        ScrollView(.horizontal) {
+                                            Text(movie.title)
+                                                .font(.title)
+                                        }
+                                        .defaultScrollAnchor(.center, for: .alignment)
+                                        
+                                        Text(movie.release)
+                                    }
                                 }
                             }
                         }
+                        .onDelete(perform: deleteItems) // Swipe to delete
                     }
-                    .onDelete(perform: deleteItems) // Swipe to delete
-                }
-                .onAppear {
-                    loadMovieList()
-                }
-                
-                // Add "+" button to start adding a new item
-                NavigationLink(destination: AddMediaPage()) {
-                    HStack {
-                        Image(systemName: "plus")
-                        Text("Add Item")
+                    .onAppear {
+                        loadMovieList()
                     }
-                    .font(.title2)
+                    
+                    // Add "+" button to start adding a new item
+                    NavigationLink(destination: AddMediaPage()) {
+                        HStack {
+                            Image(systemName: "plus")
+                            Text("Add Item")
+                        }
+                        .font(.title2)
+                    }
+                    .buttonStyle(.bordered)
+                    .padding()
                 }
-                .buttonStyle(.bordered)
-                .padding()
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing)
-                {
-                    EditButton()
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing)
+                    {
+                        EditButton()
+                    }
                 }
             }
+            .frame(minWidth: 400, minHeight: 300) // Default size for macOS
         }
-        .frame(minWidth: 400, minHeight: 300) // Default size for macOS
     }
     
     // Function to delete items

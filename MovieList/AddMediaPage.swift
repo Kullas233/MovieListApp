@@ -9,59 +9,61 @@ struct AddMediaPage: View {
     @State private var popupText: String = ""
     
     var body: some View {
-        NavigationView {
-            VStack(alignment: .center) {
-                Text("Add")
-                    .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
-
-                // Show text field
-                HStack {
-                    TextField("Enter item name", text: $newItemName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
+        GeometryReader { geometry in
+            NavigationView {
+                VStack(alignment: .center) {
+                    Text("Add")
+                        .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
                     
-                    Button("Search") {
-                        searchItems = []
-                        searchItem()
-                    }
-                    .padding()
-                    .disabled(newItemName.isEmpty) // Disable if the text field is empty
-                    
-                    Button("Clear") {
-                        newItemName = "" // Clear text field
-                        searchItems = []
-                    }
-                    .padding()
-                }
-                
-                if(showPopup)
-                {
-                    VStack {
-                        Text(popupText)
-                            .multilineTextAlignment(.center)
+                    // Show text field
+                    HStack {
+                        TextField("Enter item name", text: $newItemName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding()
-                        Button("Dismiss") {
-                            showPopup = false
+                        
+                        Button("Search") {
+                            searchItems = []
+                            searchItem()
+                        }
+                        .padding()
+                        .disabled(newItemName.isEmpty) // Disable if the text field is empty
+                        
+                        Button("Clear") {
+                            newItemName = "" // Clear text field
+                            searchItems = []
                         }
                         .padding()
                     }
-                    .border(Color.black, width: 2)
-                    .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
-                }
-                
-                // List of items from search
-                List {
-                    ForEach(searchItems, id: \.self) { item in
-                        
-                        Button(action: { addItem(movieToAdd: item) }) {
-                            HStack(alignment: .center) {
-                                SearchItemView(item: item)
+                    
+                    if(showPopup)
+                    {
+                        VStack {
+                            Text(popupText)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Button("Dismiss") {
+                                showPopup = false
                             }
-                            .onTapGesture {
-                                addItem(movieToAdd: item)
-                            }
+                            .padding()
                         }
-                        .contentShape(Rectangle())
+                        .border(Color.black, width: 2)
+                        .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
+                    }
+                    
+                    // List of items from search
+                    List {
+                        ForEach(searchItems, id: \.self) { item in
+                            
+                            Button(action: { addItem(movieToAdd: item) }) {
+                                HStack(alignment: .center) {
+                                    SearchItemView(geometry: geometry, item: item)
+                                }
+                                .onTapGesture {
+                                    addItem(movieToAdd: item)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                        }
                     }
                 }
             }
@@ -286,11 +288,10 @@ struct AddMediaPage: View {
 }
 
 struct SearchItemView: View {
+    let geometry: GeometryProxy
     let item: Movie
     var body: some View {
         VStack(alignment: .center) {
-            let screenSize: CGRect = UIScreen.main.bounds
-            
             ScrollView(.horizontal) {
                 Text(item.title)
                     .font(.title2)
@@ -298,15 +299,15 @@ struct SearchItemView: View {
             .defaultScrollAnchor(.center, for: .alignment)
             
             HStack {
-                WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(item.poster))).resizable().frame(width: (screenSize.height/10)*(2/3), height: screenSize.height/10, alignment: .center)
+                WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(item.poster))).resizable().frame(width: (geometry.size.height/10)*(2/3), height: geometry.size.height/10, alignment: .center)
                 
                 ScrollView(.vertical) {
                     Text(item.overview)
                 }
-                .frame(width: (screenSize.width-screenSize.width*0.2)-((screenSize.height/10)*(2/3)), height: (screenSize.height/10))
+                .frame(width: (geometry.size.width-geometry.size.width*0.2)-((geometry.size.height/10)*(2/3)), height: (geometry.size.height/10))
                 .defaultScrollAnchor(.leading, for: .alignment)
             }
-                
+            
             Text(item.release)
         }
     }

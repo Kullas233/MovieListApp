@@ -52,10 +52,16 @@ struct AddMediaPage: View {
                 // List of items from search
                 List {
                     ForEach(searchItems, id: \.self) { item in
+                        
                         Button(action: { addItem(movieToAdd: item) }) {
-                            SearchItemView(item: item)
+                            HStack(alignment: .center) {
+                                SearchItemView(item: item)
+                            }
+                            .onTapGesture {
+                                addItem(movieToAdd: item)
+                            }
                         }
-                        .padding()
+                        .contentShape(Rectangle())
                     }
                 }
             }

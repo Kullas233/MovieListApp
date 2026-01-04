@@ -1,7 +1,6 @@
 import SwiftUI
 import Foundation
 import SDWebImageSwiftUI
-//import /Users/dkullas/Documents/Xcode/TestList/IOSList/TestListIOS/TestListIOS/Genres.swift
 
 struct ContentView: View {
     let category: String // Non-editable title

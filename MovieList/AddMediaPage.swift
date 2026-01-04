@@ -40,7 +40,9 @@ struct AddMediaPage: View {
                         Button("Dismiss") {
                             showPopup = false
                         }
+                        .padding()
                     }
+                    .border(Color.black, width: 2)
                     .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
                 }
                 

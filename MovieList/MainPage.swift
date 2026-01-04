@@ -6,6 +6,10 @@ struct MainPage: View {
     
     var body: some View {
         NavigationStack {
+            VStack(alignment: .center) {
+                Text("Movie Lists")
+                    .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
+            }
             VStack {
                 // List of items with swipe-to-delete functionality
                 List {
@@ -26,7 +30,6 @@ struct MainPage: View {
                 .buttonStyle(.bordered)
                 .padding()
             }
-            .navigationTitle("Categories")
         }
         .frame(minWidth: 400, minHeight: 300) // Default size for macOS
     

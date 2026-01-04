@@ -12,6 +12,10 @@ struct ContentView: View {
     var body: some View
     {
         NavigationStack {
+            VStack(alignment: .center) {
+                Text(category)
+                    .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
+            }
             VStack {
                 // List of items with swipe-to-delete functionality
                 List {
@@ -47,8 +51,6 @@ struct ContentView: View {
                 .buttonStyle(.bordered)
                 .padding()
             }
-            .navigationTitle(category)
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing)
                 {

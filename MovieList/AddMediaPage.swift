@@ -10,7 +10,10 @@ struct AddMediaPage: View {
     
     var body: some View {
         NavigationView {
-            VStack {
+            VStack(alignment: .center) {
+                Text("Add")
+                    .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
+
                 // Show text field
                 HStack {
                     TextField("Enter item name", text: $newItemName)
@@ -50,34 +53,13 @@ struct AddMediaPage: View {
                 List {
                     ForEach(searchItems, id: \.self) { item in
                         Button(action: { addItem(movieToAdd: item) }) {
-                            HStack {
-                                Text(item.title)
-                            }
-                            .font(.title2)
-                            HStack {
-                                Text(item.overview)
-                            }
-                            HStack {
-                                Text(item.id)
-                            }
+                            SearchItemView(item: item)
                         }
                         .padding()
                     }
                 }
-                
-                // // Add "+" button to start adding a new item
-                // Button(action: { isAddingNewItem = true }) {
-                //     HStack {
-                //         Image(systemName: "plus")
-                //         Text("Add Item")
-                //     }
-                //     .font(.title2)
-                // }
-                // .padding()
             }
-            .navigationTitle("Add")
         }
-        .frame(minWidth: 400, minHeight: 300) // Default size for macOS
     }
     
     // Function to add a new item
@@ -294,6 +276,33 @@ struct AddMediaPage: View {
         }
         popupText = movieToAdd.title+" was added to your list!"
         showPopup = true
+    }
+}
+
+struct SearchItemView: View {
+    let item: Movie
+    var body: some View {
+        VStack(alignment: .center) {
+            let screenSize: CGRect = UIScreen.main.bounds
+            
+            ScrollView(.horizontal) {
+                Text(item.title)
+                    .font(.title2)
+            }
+            .defaultScrollAnchor(.center, for: .alignment)
+            
+            HStack {
+                WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(item.poster))).resizable().frame(width: (screenSize.height/10)*(2/3), height: screenSize.height/10, alignment: .center)
+                
+                ScrollView(.vertical) {
+                    Text(item.overview)
+                }
+                .frame(width: (screenSize.width-screenSize.width*0.2)-((screenSize.height/10)*(2/3)), height: (screenSize.height/10))
+                .defaultScrollAnchor(.leading, for: .alignment)
+            }
+                
+            Text(item.release)
+        }
     }
 }
 

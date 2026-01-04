@@ -17,17 +17,16 @@ struct DetailView: View {
     @State private var ImageURL: String = "N/A"
     
     var body: some View {
+        VStack(alignment: .center) {
+            Text(movie.title)
+                .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
+        }
+        
+        Divider()
+            .padding()
+        
         let screenSize: CGRect = UIScreen.main.bounds
         VStack(alignment: .leading) {
-            // Static title
-            Text(movie.title)
-                .font(.largeTitle)
-                .bold()
-                .padding()
-                .frame(alignment: .center)
-            
-            Divider()
-            
             // IMDb-like fields
             ScrollView(.vertical) {
 

@@ -8,7 +8,6 @@ class SharedMovie {
 
 struct ContentView: View {
     let category: String // Non-editable title
-    let backNeeded: Bool // Non-editable title
     //    @State private var allMovies: [Movie] = [] // List of items
     let sharedMovies: SharedMovieList
     @State var sharedMovie = SharedMovie()
@@ -63,17 +62,15 @@ struct MovieListView: View {
                 {
                     NavigationLink(destination: DetailView(movie: movie)) {
                         HStack {
-                            WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (geometry.size.height/18)*(2/3), height: geometry.size.height/18, alignment: .center)
+                            WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (geometry.size.height/18)*(2/3), height: geometry.size.height/18, alignment: .leading)
                             
-//                            ScrollView(.horizontal) {
                             Text(movie.title)
-                                .frame(width: geometry.size.width*(5/12), height: geometry.size.height/16, alignment: .center)
+                                .frame(minWidth: geometry.size.width*(5/12), alignment: .center)
                                 .font(.headline)
                                 .multilineTextAlignment(.center)
-//                            }
-//                            .defaultScrollAnchor(.center, for: .alignment)
                             
                             Text(movie.release)
+                                .frame(alignment: .trailing)
                         }
                     }
                 }
@@ -128,10 +125,9 @@ struct MovieListView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         let sharedMovies = SharedMovieList()
-        let sharedMovie = SharedMovie()
-        ContentView(category: "All", backNeeded: false, sharedMovies: sharedMovies)
+        ContentView(category: "All", sharedMovies: sharedMovies)
             .previewDevice("iPhone 16 Pro")
-        ContentView(category: "All", backNeeded: false, sharedMovies: sharedMovies)
+        ContentView(category: "All", sharedMovies: sharedMovies)
             .frame(width: 500, height: 400) // macOS preview
     }
 }

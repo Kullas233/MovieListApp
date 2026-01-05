@@ -20,6 +20,7 @@ struct DetailView: View {
         VStack(alignment: .center) {
             Text(movie.title)
                 .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
+                .multilineTextAlignment(.center)
         }
         
         Divider()

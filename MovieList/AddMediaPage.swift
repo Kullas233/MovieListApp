@@ -3,6 +3,7 @@ import Foundation
 import SDWebImageSwiftUI
 
 struct AddMediaPage: View {
+    let sharedMovies: SharedMovieList
     @State private var newItemName: String = "" // Holds the input for the new item
     @State private var searchItems: [Movie] = [] // Holds the input for the new item
     @State private var showPopup: Bool = false
@@ -54,12 +55,12 @@ struct AddMediaPage: View {
                     List {
                         ForEach(searchItems, id: \.self) { item in
                             
-                            Button(action: { addItem(movieToAdd: item) }) {
+                            Button(action: { addItem(sharedMovies:sharedMovies, movieToAdd: item) }) {
                                 HStack(alignment: .center) {
                                     SearchItemView(geometry: geometry, item: item)
                                 }
                                 .onTapGesture {
-                                    addItem(movieToAdd: item)
+                                    addItem(sharedMovies:sharedMovies, movieToAdd: item)
                                 }
                             }
                             .contentShape(Rectangle())
@@ -232,7 +233,7 @@ struct AddMediaPage: View {
     }
 
     // Function to add a new item
-    private func addItem(movieToAdd: Movie) {
+    private func addItem(sharedMovies: SharedMovieList, movieToAdd: Movie) {
         let filename = "myMovieList.txt"
             
         // Get the document directory path
@@ -282,6 +283,7 @@ struct AddMediaPage: View {
                 }
             }
         }
+        sharedMovies.allMovies.append(movieToAdd)
         popupText = movieToAdd.title+" was added to your list!"
         showPopup = true
     }
@@ -316,9 +318,10 @@ struct SearchItemView: View {
 // Preview for both platforms
 struct AddMediaPage_Previews: PreviewProvider {
     static var previews: some View {
-        AddMediaPage()
+        let sharedMovies = SharedMovieList()
+        AddMediaPage(sharedMovies:sharedMovies)
             .previewDevice("iPhone 16 Pro")
-        AddMediaPage()
+        AddMediaPage(sharedMovies:sharedMovies)
             .frame(width: 500, height: 400) // macOS preview
     }
 }

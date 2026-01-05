@@ -3,59 +3,68 @@ import Foundation
 import SDWebImageSwiftUI
 
 struct AddMediaPage: View {
+    let sharedMovies: SharedMovieList
     @State private var newItemName: String = "" // Holds the input for the new item
     @State private var searchItems: [Movie] = [] // Holds the input for the new item
     @State private var showPopup: Bool = false
     @State private var popupText: String = ""
     
     var body: some View {
-        NavigationView {
-            VStack(alignment: .center) {
-                Text("Add")
-                    .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
-
-                // Show text field
-                HStack {
-                    TextField("Enter item name", text: $newItemName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding()
+        GeometryReader { geometry in
+            NavigationView {
+                VStack(alignment: .center) {
+                    Text("Add")
+                        .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
                     
-                    Button("Search") {
-                        searchItems = []
-                        searchItem()
-                    }
-                    .padding()
-                    .disabled(newItemName.isEmpty) // Disable if the text field is empty
-                    
-                    Button("Clear") {
-                        newItemName = "" // Clear text field
-                        searchItems = []
-                    }
-                    .padding()
-                }
-                
-                if(showPopup)
-                {
-                    VStack {
-                        Text(popupText)
-                            .multilineTextAlignment(.center)
+                    // Show text field
+                    HStack {
+                        TextField("Enter item name", text: $newItemName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
                             .padding()
-                        Button("Dismiss") {
-                            showPopup = false
+                        
+                        Button("Search") {
+                            searchItems = []
+                            searchItem()
+                        }
+                        .padding()
+                        .disabled(newItemName.isEmpty) // Disable if the text field is empty
+                        
+                        Button("Clear") {
+                            newItemName = "" // Clear text field
+                            searchItems = []
                         }
                         .padding()
                     }
-                    .border(Color.black, width: 2)
-                    .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
-                }
-                
-                // List of items from search
-                List {
-                    ForEach(searchItems, id: \.self) { item in
-                        Button(action: { addItem(movieToAdd: item) }) {
-                            SearchItemView(item: item)
+                    
+                    if(showPopup)
+                    {
+                        VStack {
+                            Text(popupText)
+                                .multilineTextAlignment(.center)
+                                .padding()
+                            Button("Dismiss") {
+                                showPopup = false
+                            }
+                            .padding()
                         }
-                        .padding()
+                        .border(Color.black, width: 2)
+                        .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
+                    }
+                    
+                    // List of items from search
+                    List {
+                        ForEach(searchItems, id: \.self) { item in
+                            
+                            Button(action: { addItem(sharedMovies:sharedMovies, movieToAdd: item) }) {
+                                HStack(alignment: .center) {
+                                    SearchItemView(geometry: geometry, item: item)
+                                }
+                                .onTapGesture {
+                                    addItem(sharedMovies:sharedMovies, movieToAdd: item)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                        }
                     }
                 }
             }
@@ -224,7 +233,7 @@ struct AddMediaPage: View {
     }
 
     // Function to add a new item
-    private func addItem(movieToAdd: Movie) {
+    private func addItem(sharedMovies: SharedMovieList, movieToAdd: Movie) {
         let filename = "myMovieList.txt"
             
         // Get the document directory path
@@ -274,17 +283,17 @@ struct AddMediaPage: View {
                 }
             }
         }
+        sharedMovies.allMovies.append(movieToAdd)
         popupText = movieToAdd.title+" was added to your list!"
         showPopup = true
     }
 }
 
 struct SearchItemView: View {
+    let geometry: GeometryProxy
     let item: Movie
     var body: some View {
         VStack(alignment: .center) {
-            let screenSize: CGRect = UIScreen.main.bounds
-            
             ScrollView(.horizontal) {
                 Text(item.title)
                     .font(.title2)
@@ -292,15 +301,15 @@ struct SearchItemView: View {
             .defaultScrollAnchor(.center, for: .alignment)
             
             HStack {
-                WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(item.poster))).resizable().frame(width: (screenSize.height/10)*(2/3), height: screenSize.height/10, alignment: .center)
+                WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(item.poster))).resizable().frame(width: (geometry.size.height/10)*(2/3), height: geometry.size.height/10, alignment: .center)
                 
                 ScrollView(.vertical) {
                     Text(item.overview)
                 }
-                .frame(width: (screenSize.width-screenSize.width*0.2)-((screenSize.height/10)*(2/3)), height: (screenSize.height/10))
+                .frame(width: (geometry.size.width-geometry.size.width*0.2)-((geometry.size.height/10)*(2/3)), height: (geometry.size.height/10))
                 .defaultScrollAnchor(.leading, for: .alignment)
             }
-                
+            
             Text(item.release)
         }
     }
@@ -309,9 +318,10 @@ struct SearchItemView: View {
 // Preview for both platforms
 struct AddMediaPage_Previews: PreviewProvider {
     static var previews: some View {
-        AddMediaPage()
+        let sharedMovies = SharedMovieList()
+        AddMediaPage(sharedMovies:sharedMovies)
             .previewDevice("iPhone 16 Pro")
-        AddMediaPage()
+        AddMediaPage(sharedMovies:sharedMovies)
             .frame(width: 500, height: 400) // macOS preview
     }
 }

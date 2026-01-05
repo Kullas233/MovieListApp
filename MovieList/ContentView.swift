@@ -22,8 +22,8 @@ struct ContentView: View {
                     Text(category)
                         .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
                 }
+                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
                 VStack {
-                    let _ = print(category)
                     MovieListView(geometry: geometry, category: category, sharedMovies: sharedMovies, sharedMovie: sharedMovie)
                     
                     // Add "+" button to start adding a new item
@@ -60,23 +60,13 @@ struct MovieListView: View {
             ForEach(sharedMovies.allMovies, id: \.self) { movie in
                 if(movie.mediaType == category.prefix(2) || movie.mediaType == category.prefix(category.count-1) || category == "All")
                 {
-                    NavigationLink(destination: DetailView(movie: movie)) {
-                        HStack {
-                            WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (geometry.size.height/18)*(2/3), height: geometry.size.height/18, alignment: .leading)
-                            
-                            Text(movie.title)
-                                .frame(minWidth: geometry.size.width*(5/12), alignment: .center)
-                                .font(.headline)
-                                .multilineTextAlignment(.center)
-                            
-                            Text(movie.release)
-                                .frame(alignment: .trailing)
-                        }
-                    }
+//                    sharedMovie.movie = movie
+                    MovieView(geometry: geometry, movie: movie)
                 }
             }
             .onDelete(perform: deleteItems) // Swipe to delete
         }
+        .padding(EdgeInsets(top: -20, leading: 0, bottom: -20, trailing: 0))
     }
     
     // Function to delete items
@@ -117,6 +107,32 @@ struct MovieListView: View {
                 try newFileText.write(to: fileURL, atomically: false, encoding: .utf8)
             }
             catch { print("warning: file write failed!") }
+        }
+    }
+}
+
+struct MovieView: View {
+    let geometry: GeometryProxy
+    let movie: Movie
+    
+    var body: some View {
+        NavigationLink(destination: DetailView(movie: movie)) {
+            
+            
+            HStack {
+                Text("")
+                WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (geometry.size.height/13)*(2/3), height: geometry.size.height/13, alignment: .leading)
+                    .padding(EdgeInsets(top: 0, leading: -10, bottom: 0, trailing: 0))
+                
+                Text(movie.title)
+                    .lineLimit(3)
+                    .frame(minWidth: geometry.size.width*(5/12), maxHeight: geometry.size.height/11, alignment: .center)
+                    .multilineTextAlignment(.center)
+                    .font(.custom("Avenir-Black", size: 30))
+                    .minimumScaleFactor(0.05) // Allow it to shrink to 5% of original size
+                Text(movie.release)
+                    .frame(maxWidth: .infinity, maxHeight: geometry.size.height/18, alignment: .trailing)
+            }
         }
     }
 }

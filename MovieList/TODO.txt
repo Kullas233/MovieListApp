@@ -1,3 +1,8 @@
 
 add more details button to add screen
- - remove janky description scroll
+
+add error check on load from file - delete entries that arent good
+
+shuffle button
+
+more details on detail view

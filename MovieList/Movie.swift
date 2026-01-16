@@ -5,7 +5,7 @@
 //  Created by Dylan Kullas on 1/1/26.
 //
 
-struct Movie: Identifiable, Hashable {
+strct Movie: Identifiable, Hashable {
     // Properties stored data
     let mediaType: String
     let title: Substring

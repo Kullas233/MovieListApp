@@ -39,10 +39,7 @@ struct ContentView: View {
                     .padding(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
                 }
                 .toolbar {
-                    //                    ToolbarItem(placement: .navigationBarTrailing)
-                    //                    {
                     EditButton()
-                    //                    }
                 }
             }
             .frame(minWidth: 400, minHeight: 300) // Default size for macOS
@@ -67,6 +64,8 @@ struct MovieListView: View {
             }
             .onDelete(perform: deleteItems) // Swipe to delete
         }
+        .scrollContentBackground(.hidden) // Hides the default background
+        .background(Color(red: 0.87, green: 0.87, blue: 0.87, opacity: 1.0))
         .padding(EdgeInsets(top: -20, leading: 0, bottom: -20, trailing: 0))
     }
     
@@ -135,6 +134,7 @@ struct MovieView: View {
                     .frame(maxWidth: .infinity, maxHeight: geometry.size.height/18, alignment: .trailing)
             }
         }
+        .listRowBackground(Color(red: 0.95, green: 0.95, blue: 0.95, opacity: 1.0))
     }
 }
 

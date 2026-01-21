@@ -6,6 +6,12 @@ class SharedMovie {
     var movie: Movie = Movie()
 }
 
+@Observable
+class SharedPopup {
+    var showPopup: Bool = false
+    var popupText: String = ""
+}
+
 struct ContentView: View {
     let category: String // Non-editable title
     //    @State private var allMovies: [Movie] = [] // List of items
@@ -13,6 +19,7 @@ struct ContentView: View {
     @State var sharedMovie = SharedMovie()
     @State private var newItemName: String = "" // Holds the input for the new item
     @State private var isAddingNewItem: Bool = false // Toggles text field visibility
+    let SharedPopup: SharedPopup
     
     var body: some View
     {
@@ -23,20 +30,52 @@ struct ContentView: View {
                         .font(.custom("Helvetica-Bold", size: 35)) // Apply font directly
                 }
                 .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
-                VStack {
-                    MovieListView(geometry: geometry, category: category, sharedMovies: sharedMovies, sharedMovie: sharedMovie)
-                    
-                    // Add "+" button to start adding a new item
-                    NavigationLink(destination: AddMediaPage(sharedMovies: sharedMovies)) {
-                        HStack {
-                            Image(systemName: "plus")
-                            Text("Add Item")
+                
+                if(SharedPopup.showPopup)
+                {
+                    VStack {
+                        Text(SharedPopup.popupText)
+                            .multilineTextAlignment(.center)
+                            .padding()
+                        Button("Dismiss") {
+                            SharedPopup.showPopup = false
                         }
-                        .font(.title2)
+                        .padding()
                     }
-                    .buttonStyle(.bordered)
+                    .frame(minWidth: geometry.size.width/2)
+                    .border(Color.black, width: 2)
                     .padding()
-                    .padding(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
+                    .padding(EdgeInsets(top: -30, leading: 0, bottom: 10, trailing: 0))
+                    .presentationCompactAdaptation(.none) // Forces popover style in compact size classes
+                }
+                
+                VStack {
+                    MovieListView(geometry: geometry, category: category, sharedMovies: sharedMovies, sharedMovie: sharedMovie, SharedPopup: SharedPopup)
+                    
+                    HStack {
+                        // Add "+" button to start adding a new item
+                        NavigationLink(destination: AddMediaPage(sharedMovies: sharedMovies)) {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("Add Item")
+                            }
+                            .font(.title2)
+                        }
+                        .buttonStyle(.bordered)
+                        .frame(alignment: .center)
+                        .padding()
+                        .padding(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: 0))
+                        
+                        Button("Random") {
+                            let chosen = chooseRandom(sharedMovies: sharedMovies)
+                            SharedPopup.popupText = String(chosen.title)
+                            SharedPopup.showPopup = true
+                            
+                        }
+                        .padding(EdgeInsets(top: 20, leading: 0, bottom: 0, trailing: -80))
+                        .frame(alignment: .trailing)
+                    }
+                    .frame(width: geometry.size.width)
                 }
                 .toolbar {
                     EditButton()
@@ -45,6 +84,22 @@ struct ContentView: View {
             .frame(minWidth: 400, minHeight: 300) // Default size for macOS
         }
     }
+    
+    private func chooseRandom(sharedMovies: SharedMovieList) -> Movie {
+        for movie in sharedMovies.allMovies {
+            print(movie.title)
+        }
+        
+        var type = ""
+        var randomInt = -1
+        while(randomInt == -1 || (type != category.prefix(2) && type != category.prefix(category.count-1) && category != "All")) {
+            
+            randomInt = Int.random(in: 0...sharedMovies.allMovies.count-1)
+            type = sharedMovies.allMovies[randomInt].mediaType
+        }
+        
+        return sharedMovies.allMovies[randomInt]
+    }
 }
 
 struct MovieListView: View {
@@ -52,6 +107,8 @@ struct MovieListView: View {
     let category: String
     let sharedMovies: SharedMovieList
     let sharedMovie: SharedMovie
+    let SharedPopup: SharedPopup
+    
     var body: some View {
         // List of items with swipe-to-delete functionality
         List {
@@ -59,7 +116,7 @@ struct MovieListView: View {
                 if(movie.mediaType == category.prefix(2) || movie.mediaType == category.prefix(category.count-1) || category == "All")
                 {
 //                    sharedMovie.movie = movie
-                    MovieView(geometry: geometry, movie: movie)
+                    MovieView(geometry: geometry, movie: movie, SharedPopup: SharedPopup)
                 }
             }
             .onDelete(perform: deleteItems) // Swipe to delete
@@ -114,11 +171,10 @@ struct MovieListView: View {
 struct MovieView: View {
     let geometry: GeometryProxy
     let movie: Movie
+    let SharedPopup: SharedPopup
     
     var body: some View {
         NavigationLink(destination: DetailView(movie: movie)) {
-            
-            
             HStack {
                 Text("")
                 WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.poster))).resizable().frame(width: (geometry.size.height/13)*(2/3), height: geometry.size.height/13, alignment: .leading)
@@ -142,9 +198,10 @@ struct MovieView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         let sharedMovies = SharedMovieList()
-        ContentView(category: "All", sharedMovies: sharedMovies)
+        let sharedPopup = SharedPopup()
+        ContentView(category: "All", sharedMovies: sharedMovies, SharedPopup: sharedPopup)
             .previewDevice("iPhone 16 Pro")
-        ContentView(category: "All", sharedMovies: sharedMovies)
+        ContentView(category: "All", sharedMovies: sharedMovies, SharedPopup: sharedPopup)
             .frame(width: 500, height: 400) // macOS preview
     }
 }

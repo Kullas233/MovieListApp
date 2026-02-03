@@ -5,6 +5,8 @@
 //  Created by Dylan Kullas on 1/1/26.
 //
 
+import Foundation
+
 struct Movie: Identifiable, Hashable {
     // Properties stored data
     let mediaType: String
@@ -138,14 +140,7 @@ struct Movie: Identifiable, Hashable {
         self.revenue = revenue
     }
     
-    // old
     func getData() -> String {
-        let data = mediaType + "*$*@*" + title + "*$*@*" + id + "*$*@*" + overview + "*$*@*" + genreIds + "*$*@*" + release + "*$*@*" + poster + "*$*@*" + backdrop + "*$*@*" + popularity + "*$*@*\n"
-        return String(data)
-    }
-    
-    // new
-    func getNewData() -> String {
         var data = ""
         data += mediaType + "*$*@*" + title + "*$*@*" + id + "*$*@*" + overview + "*$*@*" + genreIds + "*$*@*" + release + "*$*@*" + poster + "*$*@*" + backdrop + "*$*@*" + popularity + "*$*@*"
         data += voteAverage + "*$*@*" + voteCount + "*$*@*" + director + "*$*@*" + varToString(array: actors) + "*$*@*" + varToString(array: characters) + "*$*@*"
@@ -157,17 +152,16 @@ struct Movie: Identifiable, Hashable {
         return Substring(array.joined(separator: ", "))
     }
     func varToString(dictionary: [Substring: [Substring]]) -> Substring {
-        return Substring(dictionary.description)
+        var result: Substring = ""
+        do {
+            let data = try JSONSerialization.data(withJSONObject: dictionary)
+            let string = String(data: data, encoding: .utf8)!
+            result = Substring(string)
+        } catch {
+            print("FACK")
+        }
+        return result
     }
-    
-    func arrayFromString(string: String) -> [Substring] {
-        return []
-    }
-    func dictFromString(string: String) -> [Substring: [Substring]] {
-        return [Substring: [Substring]]()
-    }
-    
-    // Havent touched below ------------------------------------------------------
     
     func getGenres() -> String {
         let genreInts = genreIds.split(separator: ",")
@@ -203,4 +197,20 @@ struct Movie: Identifiable, Hashable {
         }
         return returnString
     }
+}
+
+func arrayFromString(string: String) -> [Substring] {
+    let array: [Substring] = string.split(separator: ", ")
+    return array
+}
+
+func dictFromString(string: String) -> [Substring: [Substring]] {
+    var result = [Substring: [Substring]]()
+    do {
+        let data = Data(string.utf8)
+        result = try JSONSerialization.jsonObject(with: data) as! [Substring: [Substring]]
+    } catch {
+        print("FACK")
+    }
+    return result
 }

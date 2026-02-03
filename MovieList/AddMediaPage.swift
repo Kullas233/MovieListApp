@@ -252,12 +252,19 @@ struct AddMediaPage: View {
     // Function to add a new item
     private func addItem(sharedMovies: SharedMovieList, movieToAdd: Movie) async {
         let filename = "myMovieList.txt"
+        
+        var fullMovieToAdd = await searchFullDetails(movie: movieToAdd)
+        fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
+        fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
+        
+        print(fullMovieToAdd.getData())
+//        print(fullMovieToAdd)
             
         // Get the document directory path
         if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             let fileURL = dir.appendingPathComponent(filename)
 
-            guard let data = movieToAdd.getData().data(using: .utf8) else {
+            guard let data = fullMovieToAdd.getData().data(using: .utf8) else {
                 popupText = "Internal Error"
                 showPopup = true
                 print("Failed to convert string to data")
@@ -267,7 +274,7 @@ struct AddMediaPage: View {
             //reading
             do {
                 let text = try String(contentsOf: fileURL, encoding: .utf8)
-                let find = "*$*@*" + movieToAdd.id + "*$*@*"
+                let find = "*$*@*" + fullMovieToAdd.id + "*$*@*"
                 if(text.contains(find)) {
                     popupText = "This item is already in your list!"
                     showPopup = true
@@ -301,15 +308,8 @@ struct AddMediaPage: View {
             }
         }
         
-        var fullMovieToAdd = await searchFullDetails(movie: movieToAdd)
-        fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
-        fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
-        
-//        print(fullMovieToAdd.getNewData())
-//        print(fullMovieToAdd)
-        
-        sharedMovies.allMovies.append(movieToAdd)
-        popupText = movieToAdd.title+" was added to your list!"
+        sharedMovies.allMovies.append(fullMovieToAdd)
+        popupText = fullMovieToAdd.title+" was added to your list!"
         showPopup = true
     }
     
@@ -496,12 +496,6 @@ struct AddMediaPage: View {
 //                    print(person)
 //                    print("++++++++++++++++++++++")
             }
-            
-//                let startRuntime = siteData.range(of: "\"runtime\":")!.upperBound
-//                let endRuntime = siteData.suffix(from: startRuntime).range(of: ",\"")!.lowerBound
-//                let rangeRuntime = startRuntime..<endRuntime
-//                tmpMovie.runtime = siteData[rangeRuntime]
-//                print(siteData[rangeRuntime])
         }
         else if (movie.mediaType == "TV")
         {
@@ -557,10 +551,7 @@ struct AddMediaPage: View {
         
 //            return tmpMovie
 //            print(siteData)
-        
-//        print("2")
         return tmpMovie
-//        return movie
     }
     
     func searchWhereToWatch(movie: Movie) async -> Movie {

@@ -257,7 +257,7 @@ struct AddMediaPage: View {
         fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
         fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
         
-        print(fullMovieToAdd.getData())
+//        print(fullMovieToAdd.getData())
 //        print(fullMovieToAdd)
             
         // Get the document directory path

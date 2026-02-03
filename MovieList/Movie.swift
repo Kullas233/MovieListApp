@@ -42,12 +42,12 @@ struct Movie: Identifiable, Hashable {
         self.popularity = ""
         
         self.director = ""
-        self.actors = [""]
-        self.characters = [""]
+        self.actors = []
+        self.characters = []
         self.runtime = ""
         self.seasons = ""
         self.episodes = ""
-        self.whereToWatch = [""]
+        self.whereToWatch = []
         self.budget = ""
         self.revenue = ""
     }
@@ -65,12 +65,12 @@ struct Movie: Identifiable, Hashable {
         self.popularity = popularity
         
         self.director = ""
-        self.actors = [""]
-        self.characters = [""]
+        self.actors = []
+        self.characters = []
         self.runtime = ""
         self.seasons = ""
         self.episodes = ""
-        self.whereToWatch = [""]
+        self.whereToWatch = []
         self.budget = ""
         self.revenue = ""
     }

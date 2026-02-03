@@ -3,6 +3,7 @@ add more details button to add screen
 
 add error check on load from file - delete entries that arent good
 
-shuffle button
-
 more details on detail view
+- id ?
+- where to watch
+- better popularity

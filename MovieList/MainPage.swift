@@ -23,7 +23,7 @@ struct MainPage: View {
                 // List of items with swipe-to-delete functionality
                 List {
                     ForEach(categories, id: \.self) { category in
-                        NavigationLink(destination: ContentView(category: category, sharedMovies: sharedMovies)) {
+                        NavigationLink(destination: ContentView(category: category, sharedMovies: sharedMovies, SharedPopup: SharedPopup())) {
                             Text(category)
                         }
                     }

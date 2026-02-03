@@ -16,6 +16,9 @@ struct Movie: Identifiable, Hashable {
     let poster: Substring
     let backdrop: Substring
     let popularity: Substring
+    let voteAverage: Substring
+    let voteCount: Substring
+    
     
     var director: Substring       // creator
     var actors: [Substring]
@@ -23,7 +26,7 @@ struct Movie: Identifiable, Hashable {
     var runtime: Substring
     var seasons: Substring
     var episodes: Substring
-    var whereToWatch: [Substring]
+    var whereToWatch: [Substring: [Substring]]
     var budget: Substring
     var revenue: Substring
     
@@ -40,6 +43,8 @@ struct Movie: Identifiable, Hashable {
         self.poster = ""
         self.backdrop = ""
         self.popularity = ""
+        self.voteAverage = ""
+        self.voteCount = ""
         
         self.director = ""
         self.actors = []
@@ -47,11 +52,12 @@ struct Movie: Identifiable, Hashable {
         self.runtime = ""
         self.seasons = ""
         self.episodes = ""
-        self.whereToWatch = []
+        self.whereToWatch = [Substring: [Substring]]()
         self.budget = ""
         self.revenue = ""
     }
     
+    // OLD - REMOVE AFTER UPDATING DETAILS FULLY
     init(mediaType: String, title: Substring, id: Substring, overview: Substring, genreIds: Substring, release: Substring, poster: Substring, backdrop: Substring, popularity: Substring) {
         //First search
         self.mediaType = mediaType
@@ -64,13 +70,42 @@ struct Movie: Identifiable, Hashable {
         self.backdrop = backdrop
         self.popularity = popularity
         
+        self.voteAverage = ""
+        self.voteCount = ""
+        
         self.director = ""
         self.actors = []
         self.characters = []
         self.runtime = ""
         self.seasons = ""
         self.episodes = ""
-        self.whereToWatch = []
+        self.whereToWatch = [Substring: [Substring]]()
+        self.budget = ""
+        self.revenue = ""
+    }
+    
+    init(mediaType: String, title: Substring, id: Substring, overview: Substring, genreIds: Substring, release: Substring, poster: Substring, backdrop: Substring, popularity: Substring, voteAverage: Substring, voteCount: Substring) {
+        //First search
+        self.mediaType = mediaType
+        self.title = title
+        self.id = id
+        self.overview = overview
+        self.genreIds = genreIds
+        self.release = release
+        self.poster = poster
+        self.backdrop = backdrop
+        self.popularity = popularity
+        
+        self.voteAverage = voteAverage
+        self.voteCount = voteCount
+        
+        self.director = ""
+        self.actors = []
+        self.characters = []
+        self.runtime = ""
+        self.seasons = ""
+        self.episodes = ""
+        self.whereToWatch = [Substring: [Substring]]()
         self.budget = ""
         self.revenue = ""
     }

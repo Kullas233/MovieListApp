@@ -125,6 +125,7 @@ struct AddMediaPage: View {
                 var title: Substring = ""
                 var id: Substring = ""
                 var release: Substring = ""
+                var voteCount: Substring = ""
                 if(mediaType == "Movie")
                 {
                     let startTitle = fixedMovie.range(of: "\"title\":\"")!.upperBound
@@ -141,6 +142,11 @@ struct AddMediaPage: View {
                     let endRelease = fixedMovie.suffix(from: startRelease).range(of: "\",\"")!.lowerBound
                     let rangeRelease = startRelease..<endRelease
                     release = fixedMovie[rangeRelease]
+                    
+                    let startVoteCount = fixedMovie.range(of: "\"vote_count\":")!.upperBound
+                    let endVoteCount = fixedMovie.suffix(from: startVoteCount).range(of: "}")!.lowerBound
+                    let rangeVoteCount = startVoteCount..<endVoteCount
+                    voteCount = fixedMovie[rangeVoteCount]
                 }
                 else if(mediaType == "TV")
                 {
@@ -158,6 +164,11 @@ struct AddMediaPage: View {
                     let endRelease = fixedMovie.suffix(from: startRelease).range(of: "\",\"")!.lowerBound
                     let rangeRelease = startRelease..<endRelease
                     release = fixedMovie[rangeRelease]
+                    
+                    let startVoteCount = fixedMovie.range(of: "\"vote_count\":")!.upperBound
+                    let endVoteCount = fixedMovie.suffix(from: startVoteCount).range(of: ",")!.lowerBound
+                    let rangeVoteCount = startVoteCount..<endVoteCount
+                    voteCount = fixedMovie[rangeVoteCount]
                 }
                 else
                 {
@@ -204,8 +215,13 @@ struct AddMediaPage: View {
                 let endPopularity = fixedMovie.suffix(from: startPopularity).range(of: ",\"")!.lowerBound
                 let rangePopularity = startPopularity..<endPopularity
                 let popularity = fixedMovie[rangePopularity]
+                
+                let startVoteAverage = fixedMovie.range(of: "\"vote_average\":")!.upperBound
+                let endVoteAverage = fixedMovie.suffix(from: startVoteAverage).range(of: ",\"")!.lowerBound
+                let rangeVoteAverage = startVoteAverage..<endVoteAverage
+                let voteAverage = fixedMovie[rangeVoteAverage]
 
-                let newMovie = Movie(mediaType: mediaType, title: title, id: id, overview: overview, genreIds: genreIds, release: release, poster: poster, backdrop: backdrop, popularity: popularity)
+                let newMovie = Movie(mediaType: mediaType, title: title, id: id, overview: overview, genreIds: genreIds, release: release, poster: poster, backdrop: backdrop, popularity: popularity, voteAverage: voteAverage, voteCount: voteCount)
                 searchItems.append(newMovie)
                 
             //     // Console Output
@@ -286,13 +302,8 @@ struct AddMediaPage: View {
         
         var fullMovieToAdd = await searchFullDetails(movie: movieToAdd)
         fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
+        fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
         print(fullMovieToAdd)
-        
-//        number_of_episodes
-//        number_of_seasons
-//        episode_run_time
-//        budget
-//        revenue
         
         sharedMovies.allMovies.append(movieToAdd)
         popupText = movieToAdd.title+" was added to your list!"
@@ -370,7 +381,6 @@ struct AddMediaPage: View {
                 print("fuck off")
             }
 //                print(String(decoding: data, as: UTF8.self))
-            
             
             let startRuntime = siteData.range(of: "\"episode_run_time\":")!.upperBound
             let endRuntime = siteData.suffix(from: startRuntime).range(of: ",\"")!.lowerBound
@@ -545,6 +555,62 @@ struct AddMediaPage: View {
         print("2")
         return tmpMovie
 //        return movie
+    }
+    
+    func searchWhereToWatch(movie: Movie) async -> Movie {
+        var tmpMovie = movie
+        
+        let url = URL(string: "https://api.themoviedb.org/3/" + movie.mediaType.lowercased() + "/" + movie.id + "/watch/providers")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.allHTTPHeaderFields = [
+          "accept": "application/json",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+        ]
+
+        var siteData = ""
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            siteData = String(decoding: data, as: UTF8.self)
+        } catch {
+            print("fuck off")
+        }
+        
+//        print(siteData)
+
+        if(siteData.range(of: "\"US\":{") != nil){
+            let startUS = siteData.range(of: "\"US\":{")!.upperBound
+            let endUS = siteData.suffix(from: startUS).range(of: "},\"")!.lowerBound
+            let rangeUS = startUS..<endUS
+            let USdata = siteData[rangeUS]
+            //        print(siteData[rangeUS])
+            
+            var dataDictionary = [Substring: [Substring]]()
+            var title: Substring = ""
+            var provider: Substring = ""
+            let USdataType = USdata.split(separator: "],")
+            for watchData in USdataType {
+                let USdataProvider = watchData.split(separator: "{")
+                for providerData in USdataProvider {
+                    // Find the first match in the source string
+                    if let match = providerData.firstMatch(of: /"([A-z]*)":\[/) {
+                        (_, title) = match.output
+                        dataDictionary[title] = []
+                    }
+                    else if let match = providerData.firstMatch(of: /"provider_name":"(.*)",/) {
+                        (_, provider) = match.output
+                        dataDictionary[title]!.append(provider)
+                    }
+                    else {
+                        print("shouldnt be here")
+                    }
+                }
+            }
+            tmpMovie.whereToWatch = dataDictionary
+        }
+        
+        return tmpMovie
     }
 }
 

@@ -7,3 +7,5 @@ more details on detail view
 - id ?
 - where to watch
 - better popularity
+
+add average runtime for tv shows = runtime

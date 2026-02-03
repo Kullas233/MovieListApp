@@ -96,13 +96,14 @@ struct AddMediaPage: View {
 
             let (data, _) = try await URLSession.shared.data(for: request)
 //            print(String(decoding: data, as: UTF8.self))
-            let siteData = String(decoding: data, as: UTF8.self)
+            var siteData = String(decoding: data, as: UTF8.self)
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
 
             let searchItemsText = siteData.components(separatedBy: "{\"adult\":")
             var mediaType = ""
             for movie in searchItemsText.dropFirst()
             {
-                let fixedMovie = movie.replacing("\n", with: "")
+                let fixedMovie = movie//.replacing("\n", with: "")
 //                print(fixedMovie)
 //                print("######################################################################")
 //                print("######################################################################")
@@ -303,7 +304,9 @@ struct AddMediaPage: View {
         var fullMovieToAdd = await searchFullDetails(movie: movieToAdd)
         fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
         fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
-        print(fullMovieToAdd)
+        
+//        print(fullMovieToAdd.getNewData())
+//        print(fullMovieToAdd)
         
         sharedMovies.allMovies.append(movieToAdd)
         popupText = movieToAdd.title+" was added to your list!"
@@ -337,6 +340,7 @@ struct AddMediaPage: View {
             } catch {
                 print("fuck off")
             }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
             
             let startRuntime = siteData.range(of: "\"runtime\":")!.upperBound
             let endRuntime = siteData.suffix(from: startRuntime).range(of: ",\"")!.lowerBound
@@ -380,6 +384,7 @@ struct AddMediaPage: View {
             } catch {
                 print("fuck off")
             }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
 //                print(String(decoding: data, as: UTF8.self))
             
             let startRuntime = siteData.range(of: "\"episode_run_time\":")!.upperBound
@@ -428,7 +433,7 @@ struct AddMediaPage: View {
     func searchCast(movie: Movie) async -> Movie {
         var tmpMovie = movie
         
-        print("1")
+//        print("1")
         
         if(movie.mediaType == "Movie")
         {
@@ -454,6 +459,7 @@ struct AddMediaPage: View {
             } catch {
                 print("fuck off")
             }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
 //                print(String(decoding: data, as: UTF8.self))
             
             
@@ -468,7 +474,7 @@ struct AddMediaPage: View {
                     let endActor = person.suffix(from: startActor).range(of: "\",\"")!.lowerBound
                     let rangeActor = startActor..<endActor
                     tmpMovie.actors.append(person[rangeActor])
-                    print(person[rangeActor])
+//                    print(person[rangeActor])
                     
                     let startCharacter = person.range(of: "\"character\":\"")!.upperBound
                     let endCharacter = person.suffix(from: startCharacter).range(of: "\",\"")!.lowerBound
@@ -552,7 +558,7 @@ struct AddMediaPage: View {
 //            return tmpMovie
 //            print(siteData)
         
-        print("2")
+//        print("2")
         return tmpMovie
 //        return movie
     }
@@ -576,6 +582,7 @@ struct AddMediaPage: View {
         } catch {
             print("fuck off")
         }
+        siteData = siteData.replacingOccurrences(of: "\n", with: "")
         
 //        print(siteData)
 

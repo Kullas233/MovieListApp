@@ -69,7 +69,7 @@ struct MainPage: View {
                     }
                     
                     let movieFromFile = movieFromFile.components(separatedBy: "*$*@*")
-                    print(movieFromFile)
+//                    print(movieFromFile)
                     
                     let newMovie = Movie(mediaType: movieFromFile[0], title: Substring(movieFromFile[1]), id: Substring(movieFromFile[2]), overview: Substring(movieFromFile[3]), genreIds: Substring(movieFromFile[4]), release: Substring(movieFromFile[5]), poster: Substring(movieFromFile[6]), backdrop: Substring(movieFromFile[7]), popularity: Substring(movieFromFile[8]))
 //                    let newMovie = Movie()

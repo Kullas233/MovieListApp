@@ -17,7 +17,20 @@ struct Movie: Identifiable, Hashable {
     let backdrop: Substring
     let popularity: Substring
     
+    var director: Substring       // creator
+    var actors: [Substring]
+    var characters: [Substring]
+    var runtime: Substring
+    var seasons: Substring
+    var episodes: Substring
+    var whereToWatch: [Substring]
+    var budget: Substring
+    var revenue: Substring
+    
+    
+    
     init() {
+        //First search
         self.mediaType = "Movie"
         self.title = ""
         self.id = ""
@@ -27,9 +40,20 @@ struct Movie: Identifiable, Hashable {
         self.poster = ""
         self.backdrop = ""
         self.popularity = ""
+        
+        self.director = ""
+        self.actors = [""]
+        self.characters = [""]
+        self.runtime = ""
+        self.seasons = ""
+        self.episodes = ""
+        self.whereToWatch = [""]
+        self.budget = ""
+        self.revenue = ""
     }
     
     init(mediaType: String, title: Substring, id: Substring, overview: Substring, genreIds: Substring, release: Substring, poster: Substring, backdrop: Substring, popularity: Substring) {
+        //First search
         self.mediaType = mediaType
         self.title = title
         self.id = id
@@ -39,7 +63,19 @@ struct Movie: Identifiable, Hashable {
         self.poster = poster
         self.backdrop = backdrop
         self.popularity = popularity
+        
+        self.director = ""
+        self.actors = [""]
+        self.characters = [""]
+        self.runtime = ""
+        self.seasons = ""
+        self.episodes = ""
+        self.whereToWatch = [""]
+        self.budget = ""
+        self.revenue = ""
     }
+    
+    // Havent touched below ------------------------------------------------------
     
     func getData() -> String {
         let data = mediaType + "*$*@*" + title + "*$*@*" + id + "*$*@*" + overview + "*$*@*" + genreIds + "*$*@*" + release + "*$*@*" + poster + "*$*@*" + backdrop + "*$*@*" + popularity + "*$*@*\n"

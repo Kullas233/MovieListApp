@@ -4,17 +4,6 @@ import SDWebImageSwiftUI
 
 struct DetailView: View {
     let movie: Movie // Non-editable title
-    @State private var imdbId: String = "" // Holds the input for the link
-    @State private var mdId: Int32 = -1 // Holds the input for the link
-    @State private var savedId: String? // Stores the saved link
-    
-    // Placeholder IMDb-like information
-//    @State private var Title: String = "N/A"
-//    @State private var Genre: String = "N/A"
-//    @State private var ReleaseDate: String = "N/A"
-//    @State private var Popularity: String = "N/A"
-//    @State private var description: Substring = "N/A"
-//    @State private var ImageURL: String = "N/A"
     
     var body: some View {
         VStack(alignment: .center) {
@@ -115,22 +104,9 @@ struct DetailView: View {
                     .frame(alignment: .center)
                 }
                 .frame(maxWidth: geometry.size.width, alignment: .center)
-//                .onAppear {
-//                    loadMovieDetails()
-//                }
             }
         }
     }
-    // Function to simulate loading IMDb-like details
-//    private func loadMovieDetails() {
-//        // In a real app, you would fetch this data from an API like IMDb or TMDb.
-//        ImageURL = "https://image.tmdb.org/t/p/original"+String(movie.backdrop)
-//        Title = String(movie.title)
-//        Genre = String(movie.getGenres())
-//        ReleaseDate = String(movie.release)
-//        Popularity = String(movie.popularity)
-//        Description = String(movie.overview)
-//    }
 }
 
 // Preview for both platforms

@@ -256,6 +256,9 @@ struct AddMediaPage: View {
         var fullMovieToAdd = await searchFullDetails(movie: movieToAdd)
         fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
         fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
+        if(fullMovieToAdd.mediaType == "TV") {
+            fullMovieToAdd = await searchTVRuntime(movie: fullMovieToAdd)
+        }
         
 //        print(fullMovieToAdd.getData())
 //        print(fullMovieToAdd)
@@ -608,6 +611,44 @@ struct AddMediaPage: View {
             tmpMovie.whereToWatch = dataDictionary
         }
         
+        return tmpMovie
+    }
+    
+    func searchTVRuntime(movie: Movie) async -> Movie {
+        var tmpMovie = movie
+        var total = 0
+        for number in 1...Int(movie.seasons)! {
+        
+            let url = URL(string: "https://api.themoviedb.org/3/tv/" + movie.id + "/season/" + String(number))!
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            let queryItems: [URLQueryItem] = [
+                URLQueryItem(name: "language", value: "en-US"),
+            ]
+            components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+            
+            var request = URLRequest(url: components.url!)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 10
+            request.allHTTPHeaderFields = [
+                "accept": "application/json",
+                "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+            ]
+            
+            var siteData = ""
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                siteData = String(decoding: data, as: UTF8.self)
+            } catch {
+                print("fuck off")
+            }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
+            let matches = siteData.matches(of: /"runtime":([0-9]*),/)
+            
+            for match in matches {
+                total += Int(match.1)!
+            }
+        }
+        tmpMovie.runtime = Substring(String(total/Int(movie.episodes)!))
         return tmpMovie
     }
 }

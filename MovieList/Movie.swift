@@ -59,33 +59,6 @@ struct Movie: Identifiable, Hashable {
         self.revenue = ""
     }
     
-    // OLD - REMOVE AFTER UPDATING DETAILS FULLY
-    init(mediaType: String, title: Substring, id: Substring, overview: Substring, genreIds: Substring, release: Substring, poster: Substring, backdrop: Substring, popularity: Substring) {
-        //First search
-        self.mediaType = mediaType
-        self.title = title
-        self.id = id
-        self.overview = overview
-        self.genreIds = genreIds
-        self.release = release
-        self.poster = poster
-        self.backdrop = backdrop
-        self.popularity = popularity
-        
-        self.voteAverage = ""
-        self.voteCount = ""
-        
-        self.director = ""
-        self.actors = []
-        self.characters = []
-        self.runtime = ""
-        self.seasons = ""
-        self.episodes = ""
-        self.whereToWatch = [Substring: [Substring]]()
-        self.budget = ""
-        self.revenue = ""
-    }
-    
     //new half
     init(mediaType: String, title: Substring, id: Substring, overview: Substring, genreIds: Substring, release: Substring, poster: Substring, backdrop: Substring, popularity: Substring, voteAverage: Substring, voteCount: Substring) {
         //First search

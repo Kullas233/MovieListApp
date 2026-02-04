@@ -1,5 +1,6 @@
 
 add more details button to add screen
+- hold action to make picture bigger
 
 add error check on load from file - delete entries that arent good
 

@@ -9,12 +9,12 @@ struct DetailView: View {
     @State private var savedId: String? // Stores the saved link
     
     // Placeholder IMDb-like information
-    @State private var Title: String = "N/A"
-    @State private var Genre: String = "N/A"
-    @State private var ReleaseDate: String = "N/A"
-    @State private var Popularity: String = "N/A"
-    @State private var Description: String = "N/A"
-    @State private var ImageURL: String = "N/A"
+//    @State private var Title: String = "N/A"
+//    @State private var Genre: String = "N/A"
+//    @State private var ReleaseDate: String = "N/A"
+//    @State private var Popularity: String = "N/A"
+//    @State private var description: Substring = "N/A"
+//    @State private var ImageURL: String = "N/A"
     
     var body: some View {
         VStack(alignment: .center) {
@@ -31,47 +31,106 @@ struct DetailView: View {
                 // IMDb-like fields
                 ScrollView(.vertical) {
                     
-                    WebImage(url: URL(string: ImageURL)).resizable().frame(width: geometry.size.width-20, height: (geometry.size.width-20)/1.778, alignment: .center)
+                    WebImage(url: URL(string: "https://image.tmdb.org/t/p/original"+String(movie.backdrop))).resizable().frame(width: geometry.size.width-20, height: (geometry.size.width-20)/1.778, alignment: .center)
                     
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Title: \(Title)")
+                        Text("Title: \(movie.title)")
                             .font(.headline)
                         
-                        Text("Genre: \(Genre)")
+                        Text("Genre: \(movie.getGenres())")
                             .font(.headline)
                         
-                        Text("Release Date: \(ReleaseDate)")
+                        Text("Release Date: \(movie.release)")
                             .font(.headline)
                         
-                        Text("Popularity: \(Popularity)")
+                        Text("Popularity: \(movie.popularity)")
                             .font(.headline)
                         
                         Text("Description:")
                             .font(.headline)
                             .padding(.bottom, -5)
+                        Text("\(movie.overview)")
                         
-                        TextField(Description, text: $Description, axis: .vertical)
+                        Divider()
+                        
+                        Text("Vote Average: \(movie.voteAverage)")
+                            .font(.headline)
+                        
+                        Text("Vote Count: \(movie.voteCount)")
+                            .font(.headline)
+                        
+                        if(movie.mediaType == "Movie") {
+                            Text("Director: \(movie.director)")
+                                .font(.headline)
+                        } else if(movie.mediaType == "TV") {
+                            Text("Creator: \(movie.director)")
+                                .font(.headline)
+                        } else {
+                            let _ = print("person")
+                        }
+                        
+                        Text("Actors: \(movie.varToString(array: movie.actors))")
+                            .font(.headline)
+                        
+                        Text("Characters: \(movie.varToString(array: movie.characters))")
+                            .font(.headline)
+                        
+                        if(movie.runtime != "[]") {
+                            Text("Runtime: \(movie.runtime)")
+                                .font(.headline)
+                        }
+                        
+                        if(movie.seasons != "") {
+                            Text("# of Season: \(movie.seasons)")
+                                .font(.headline)
+                        }
+                        
+                        if(movie.episodes != "") {
+                            Text("# of Episodes: \(movie.episodes)")
+                                .font(.headline)
+                        }
+                        
+                        let providersString = movie.varToString(dictionary: movie.whereToWatch)
+                        if(providersString != "{}") {
+                            Text("Watch Providers: \(providersString)")
+                                .font(.headline)
+                        } else {
+                            Text("Watch Providers: None that I know of ;(")
+                                .font(.headline)
+                        }
+                        
+                        if(movie.budget != "") {
+                            Text("Budget: \(movie.budget)")
+                                .font(.headline)
+                        }
+                            
+                        if(movie.revenue != "") {
+                            Text("Revenue: \(movie.revenue)")
+                                .font(.headline)
+                        }
+                                                
+//                        TextField(Description, text: $description, axis: .vertical)
                     }
                     .padding()
                     .frame(alignment: .center)
                 }
                 .frame(maxWidth: geometry.size.width, alignment: .center)
-                .onAppear {
-                    loadMovieDetails()
-                }
+//                .onAppear {
+//                    loadMovieDetails()
+//                }
             }
         }
     }
     // Function to simulate loading IMDb-like details
-    private func loadMovieDetails() {
-        // In a real app, you would fetch this data from an API like IMDb or TMDb.
-        ImageURL = "https://image.tmdb.org/t/p/original"+String(movie.backdrop)
-        Title = String(movie.title)
-        Genre = String(movie.getGenres())
-        ReleaseDate = String(movie.release)
-        Popularity = String(movie.popularity)
-        Description = String(movie.overview)
-    }
+//    private func loadMovieDetails() {
+//        // In a real app, you would fetch this data from an API like IMDb or TMDb.
+//        ImageURL = "https://image.tmdb.org/t/p/original"+String(movie.backdrop)
+//        Title = String(movie.title)
+//        Genre = String(movie.getGenres())
+//        ReleaseDate = String(movie.release)
+//        Popularity = String(movie.popularity)
+//        Description = String(movie.overview)
+//    }
 }
 
 // Preview for both platforms

@@ -467,7 +467,7 @@ struct AddMediaPage: View {
             
             
             let searchItemsText = siteData.components(separatedBy: "{\"adult\":")
-            var count = 3
+            var count = 5
             for person in searchItemsText.dropFirst()
             {
 //                    let fixedMovie = person.replacing("\n", with: "")]
@@ -527,7 +527,7 @@ struct AddMediaPage: View {
             }
             
             let searchItemsText = siteData.components(separatedBy: "{\"adult\":")
-            var count = 3
+            var count = 5
             for person in searchItemsText.dropFirst()
             {
 //                    let fixedMovie = person.replacing("\n", with: "")]

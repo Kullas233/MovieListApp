@@ -58,11 +58,23 @@ struct DetailView: View {
                             let _ = print("person")
                         }
                         
-                        Text("Actors: \(movie.varToString(array: movie.actors))")
-                            .font(.headline)
+                        HStack {
+                            Text("Actors: ")
+                                .font(.headline)
+                            ScrollView(.horizontal) {
+                                Text("\(movie.varToString(array: movie.actors))")
+                                    .font(.headline)
+                            }
+                        }
                         
-                        Text("Characters: \(movie.varToString(array: movie.characters))")
-                            .font(.headline)
+                        HStack {
+                            Text("Characters: ")
+                                .font(.headline)
+                            ScrollView(.horizontal) {
+                                Text("\(movie.varToString(array: movie.characters))")
+                                    .font(.headline)
+                            }
+                        }
                         
                         if(movie.runtime != "[]") {
                             Text("Runtime: \(movie.runtime)")
@@ -79,15 +91,6 @@ struct DetailView: View {
                                 .font(.headline)
                         }
                         
-                        let providersString = movie.varToString(dictionary: movie.whereToWatch)
-                        if(providersString != "{}") {
-                            Text("Watch Providers: \(providersString)")
-                                .font(.headline)
-                        } else {
-                            Text("Watch Providers: None that I know of ;(")
-                                .font(.headline)
-                        }
-                        
                         if(movie.budget != "") {
                             Text("Budget: \(movie.budget)")
                                 .font(.headline)
@@ -97,8 +100,36 @@ struct DetailView: View {
                             Text("Revenue: \(movie.revenue)")
                                 .font(.headline)
                         }
-                                                
-//                        TextField(Description, text: $description, axis: .vertical)
+                        
+                        Divider()
+                        
+                        let providersString = movie.getWhereToWatchDisplayFormat()
+//                        let _ = print(providersString)
+                        if(providersString != "{}") {
+                            var types: [String] {
+                                providersString.split(separator: "\n").map(String.init)
+                            }
+//                            let _ = print(types.count)
+                            Text("Watch Providers:")
+                                .font(.headline)
+                            
+                            ForEach(types, id: \.self) { type in
+                                var splitTypes: [String] {
+                                    type.split(separator: ",,").map(String.init)
+                                }
+                                HStack {
+                                    Text("\(splitTypes[0].uppercased()): ")
+                                        .font(.headline)
+                                    ScrollView(.horizontal) {
+                                        Text("\(splitTypes[1])")
+                                            .font(.headline)
+                                    }
+                                }
+                            }
+                        } else {
+                            Text("Watch Providers: None that I know of ;(")
+                                .font(.headline)
+                        }
                     }
                     .padding()
                     .frame(alignment: .center)

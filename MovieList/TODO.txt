@@ -4,4 +4,14 @@ add more details button to add screen
 
 add error check on load from file - delete entries that arent good
 
-add average runtime for tv shows = runtime
+make details looks nice
+- css type stuff
+- make vote average a percent / 100
+- make runtime be formatted hours:minutes
+- make budget be formatted as $ amount
+- make providers be - free, flatrate, rent, buy, ads
+- rearrange
+
+
+Couple Actors and Characters to scroll together
+

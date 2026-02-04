@@ -55,12 +55,12 @@ struct AddMediaPage: View {
                     List {
                         ForEach(searchItems, id: \.self) { item in
                             
-                            Button(action: { addItem(sharedMovies:sharedMovies, movieToAdd: item) }) {
+                            Button(action: { Task { await addItem(sharedMovies:sharedMovies, movieToAdd: item) } } ) {
                                 HStack(alignment: .center) {
                                     SearchItemView(geometry: geometry, item: item)
                                 }
                                 .onTapGesture {
-                                    addItem(sharedMovies:sharedMovies, movieToAdd: item)
+                                    Task { await addItem(sharedMovies:sharedMovies, movieToAdd: item) }
                                 }
                             }
                             .contentShape(Rectangle())
@@ -96,17 +96,18 @@ struct AddMediaPage: View {
 
             let (data, _) = try await URLSession.shared.data(for: request)
 //            print(String(decoding: data, as: UTF8.self))
-            let siteData = String(decoding: data, as: UTF8.self)
+            var siteData = String(decoding: data, as: UTF8.self)
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
 
             let searchItemsText = siteData.components(separatedBy: "{\"adult\":")
             var mediaType = ""
             for movie in searchItemsText.dropFirst()
             {
-                let fixedMovie = movie.replacing("\n", with: "")
-                print(fixedMovie)
-                print("######################################################################")
-                print("######################################################################")
-                print("######################################################################")
+                let fixedMovie = movie//.replacing("\n", with: "")
+//                print(fixedMovie)
+//                print("######################################################################")
+//                print("######################################################################")
+//                print("######################################################################")
                 
                 mediaType = ""
                 if(fixedMovie.contains("\"media_type\":\"person\""))
@@ -125,6 +126,7 @@ struct AddMediaPage: View {
                 var title: Substring = ""
                 var id: Substring = ""
                 var release: Substring = ""
+                var voteCount: Substring = ""
                 if(mediaType == "Movie")
                 {
                     let startTitle = fixedMovie.range(of: "\"title\":\"")!.upperBound
@@ -141,6 +143,11 @@ struct AddMediaPage: View {
                     let endRelease = fixedMovie.suffix(from: startRelease).range(of: "\",\"")!.lowerBound
                     let rangeRelease = startRelease..<endRelease
                     release = fixedMovie[rangeRelease]
+                    
+                    let startVoteCount = fixedMovie.range(of: "\"vote_count\":")!.upperBound
+                    let endVoteCount = fixedMovie.suffix(from: startVoteCount).range(of: "}")!.lowerBound
+                    let rangeVoteCount = startVoteCount..<endVoteCount
+                    voteCount = fixedMovie[rangeVoteCount]
                 }
                 else if(mediaType == "TV")
                 {
@@ -158,6 +165,11 @@ struct AddMediaPage: View {
                     let endRelease = fixedMovie.suffix(from: startRelease).range(of: "\",\"")!.lowerBound
                     let rangeRelease = startRelease..<endRelease
                     release = fixedMovie[rangeRelease]
+                    
+                    let startVoteCount = fixedMovie.range(of: "\"vote_count\":")!.upperBound
+                    let endVoteCount = fixedMovie.suffix(from: startVoteCount).range(of: ",")!.lowerBound
+                    let rangeVoteCount = startVoteCount..<endVoteCount
+                    voteCount = fixedMovie[rangeVoteCount]
                 }
                 else
                 {
@@ -204,8 +216,13 @@ struct AddMediaPage: View {
                 let endPopularity = fixedMovie.suffix(from: startPopularity).range(of: ",\"")!.lowerBound
                 let rangePopularity = startPopularity..<endPopularity
                 let popularity = fixedMovie[rangePopularity]
+                
+                let startVoteAverage = fixedMovie.range(of: "\"vote_average\":")!.upperBound
+                let endVoteAverage = fixedMovie.suffix(from: startVoteAverage).range(of: ",\"")!.lowerBound
+                let rangeVoteAverage = startVoteAverage..<endVoteAverage
+                let voteAverage = fixedMovie[rangeVoteAverage]
 
-                let newMovie = Movie(mediaType: mediaType, title: title, id: id, overview: overview, genreIds: genreIds, release: release, poster: poster, backdrop: backdrop, popularity: popularity)
+                let newMovie = Movie(mediaType: mediaType, title: title, id: id, overview: overview, genreIds: genreIds, release: release, poster: poster, backdrop: backdrop, popularity: popularity, voteAverage: voteAverage, voteCount: voteCount)
                 searchItems.append(newMovie)
                 
             //     // Console Output
@@ -233,14 +250,21 @@ struct AddMediaPage: View {
     }
 
     // Function to add a new item
-    private func addItem(sharedMovies: SharedMovieList, movieToAdd: Movie) {
+    private func addItem(sharedMovies: SharedMovieList, movieToAdd: Movie) async {
         let filename = "myMovieList.txt"
+        
+        var fullMovieToAdd = await searchFullDetails(movie: movieToAdd)
+        fullMovieToAdd = await searchCast(movie: fullMovieToAdd)
+        fullMovieToAdd = await searchWhereToWatch(movie: fullMovieToAdd)
+        
+//        print(fullMovieToAdd.getData())
+//        print(fullMovieToAdd)
             
         // Get the document directory path
         if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
             let fileURL = dir.appendingPathComponent(filename)
 
-            guard let data = movieToAdd.getData().data(using: .utf8) else {
+            guard let data = fullMovieToAdd.getData().data(using: .utf8) else {
                 popupText = "Internal Error"
                 showPopup = true
                 print("Failed to convert string to data")
@@ -250,7 +274,7 @@ struct AddMediaPage: View {
             //reading
             do {
                 let text = try String(contentsOf: fileURL, encoding: .utf8)
-                let find = "*$*@*" + movieToAdd.id + "*$*@*"
+                let find = "*$*@*" + fullMovieToAdd.id + "*$*@*"
                 if(text.contains(find)) {
                     popupText = "This item is already in your list!"
                     showPopup = true
@@ -283,9 +307,308 @@ struct AddMediaPage: View {
                 }
             }
         }
-        sharedMovies.allMovies.append(movieToAdd)
-        popupText = movieToAdd.title+" was added to your list!"
+        
+        sharedMovies.allMovies.append(fullMovieToAdd)
+        popupText = fullMovieToAdd.title+" was added to your list!"
         showPopup = true
+    }
+    
+    func searchFullDetails(movie: Movie) async -> Movie {
+        var tmpMovie = movie
+        
+        if(movie.mediaType == "Movie")
+        {
+            let url = URL(string: "https://api.themoviedb.org/3/movie/"+movie.id)!
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            let queryItems: [URLQueryItem] = [
+              URLQueryItem(name: "language", value: "en-US"),
+            ]
+            components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+
+            var request = URLRequest(url: components.url!)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 10
+            request.allHTTPHeaderFields = [
+              "accept": "application/json",
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+            ]
+
+            var siteData = ""
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                siteData = String(decoding: data, as: UTF8.self)
+            } catch {
+                print("fuck off")
+            }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
+            
+            let startRuntime = siteData.range(of: "\"runtime\":")!.upperBound
+            let endRuntime = siteData.suffix(from: startRuntime).range(of: ",\"")!.lowerBound
+            let rangeRuntime = startRuntime..<endRuntime
+            tmpMovie.runtime = siteData[rangeRuntime]
+//                print(siteData[rangeRuntime])
+            
+            let startBudget = siteData.range(of: "\"budget\":")!.upperBound
+            let endBudget = siteData.suffix(from: startBudget).range(of: ",\"")!.lowerBound
+            let rangeBudget = startBudget..<endBudget
+            tmpMovie.budget = siteData[rangeBudget]
+//                print(siteData[rangeBudget])
+            
+            let startRevenue = siteData.range(of: "\"revenue\":")!.upperBound
+            let endRevenue = siteData.suffix(from: startRevenue).range(of: ",\"")!.lowerBound
+            let rangeRevenue = startRevenue..<endRevenue
+            tmpMovie.revenue = siteData[rangeRevenue]
+//                print(siteData[rangeRevenue])
+        }
+        else if (movie.mediaType == "TV")
+        {
+            let url = URL(string: "https://api.themoviedb.org/3/tv/"+movie.id)!
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            let queryItems: [URLQueryItem] = [
+                URLQueryItem(name: "language", value: "en-US"),
+            ]
+            components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+
+            var request = URLRequest(url: components.url!)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 10
+            request.allHTTPHeaderFields = [
+                "accept": "application/json",
+                "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+            ]
+
+            var siteData = ""
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                siteData = String(decoding: data, as: UTF8.self)
+            } catch {
+                print("fuck off")
+            }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
+//                print(String(decoding: data, as: UTF8.self))
+            
+            let startRuntime = siteData.range(of: "\"episode_run_time\":")!.upperBound
+            let endRuntime = siteData.suffix(from: startRuntime).range(of: ",\"")!.lowerBound
+            let rangeRuntime = startRuntime..<endRuntime
+            tmpMovie.runtime = siteData[rangeRuntime]
+//                print(siteData[rangeRuntime])
+            
+            let startSeasons = siteData.range(of: "\"number_of_seasons\":")!.upperBound
+            let endSeasons = siteData.suffix(from: startSeasons).range(of: ",\"")!.lowerBound
+            let rangeSeasons = startSeasons..<endSeasons
+            tmpMovie.seasons = siteData[rangeSeasons]
+//                print(siteData[rangeSeasons])
+            
+            let startEpisodes = siteData.range(of: "\"number_of_episodes\":")!.upperBound
+            let endEpisodes = siteData.suffix(from: startEpisodes).range(of: ",\"")!.lowerBound
+            let rangeEpisodes = startEpisodes..<endEpisodes
+            tmpMovie.episodes = siteData[rangeEpisodes]
+//                print(siteData[rangeEpisodes])
+
+            let startCreatedBy = siteData.range(of: "\"created_by\":[")!.upperBound
+            let endCreatedBy = siteData.suffix(from: startCreatedBy).range(of: "],")!.lowerBound
+            let rangeCreatedBy = startCreatedBy..<endCreatedBy
+            let createdby = siteData[rangeCreatedBy]
+            let createdbyText = createdby.components(separatedBy: "{")
+            var creators = ""
+            for person in createdbyText.dropFirst()
+            {
+//                    print(person)
+                let startCreator = person.range(of: "\"name\":\"")!.upperBound
+                let endCreator = person.suffix(from: startCreator).range(of: "\",\"")!.lowerBound
+                let rangeCreator = startCreator..<endCreator
+                creators += person[rangeCreator] + ", "
+            }
+            tmpMovie.director = Substring(creators).dropLast(2)
+//                print(tmpMovie.director)
+            
+//                print(siteData[rangeCreatedBy])
+            
+//            print(siteData)
+        }
+        return tmpMovie
+//        return movie
+    }
+    
+    func searchCast(movie: Movie) async -> Movie {
+        var tmpMovie = movie
+        
+//        print("1")
+        
+        if(movie.mediaType == "Movie")
+        {
+            let url = URL(string: "https://api.themoviedb.org/3/movie/" + movie.id + "/credits")!
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            let queryItems: [URLQueryItem] = [
+              URLQueryItem(name: "language", value: "en-US"),
+            ]
+            components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+
+            var request = URLRequest(url: components.url!)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 10
+            request.allHTTPHeaderFields = [
+              "accept": "application/json",
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+            ]
+
+            var siteData = ""
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                siteData = String(decoding: data, as: UTF8.self)
+            } catch {
+                print("fuck off")
+            }
+            siteData = siteData.replacingOccurrences(of: "\n", with: "")
+//                print(String(decoding: data, as: UTF8.self))
+            
+            
+            let searchItemsText = siteData.components(separatedBy: "{\"adult\":")
+            var count = 3
+            for person in searchItemsText.dropFirst()
+            {
+//                    let fixedMovie = person.replacing("\n", with: "")]
+                if(person.contains("\"known_for_department\":\"Acting\"") && count > 0)
+                {
+                    let startActor = person.range(of: "\"name\":\"")!.upperBound
+                    let endActor = person.suffix(from: startActor).range(of: "\",\"")!.lowerBound
+                    let rangeActor = startActor..<endActor
+                    tmpMovie.actors.append(person[rangeActor])
+//                    print(person[rangeActor])
+                    
+                    let startCharacter = person.range(of: "\"character\":\"")!.upperBound
+                    let endCharacter = person.suffix(from: startCharacter).range(of: "\",\"")!.lowerBound
+                    let rangeCharacter = startCharacter..<endCharacter
+                    tmpMovie.characters.append(person[rangeCharacter])
+//                        print(person[rangeCharacter])
+                    count=count-1
+                }
+                else if(person.contains("\"job\":\"Director\""))
+                {
+                    let startDirector = person.range(of: "\"name\":\"")!.upperBound
+                    let endDirector = person.suffix(from: startDirector).range(of: "\",\"")!.lowerBound
+                    let rangeDirector = startDirector..<endDirector
+                    tmpMovie.director = person[rangeDirector]
+//                        print(person[rangeDirector])
+                    count=count-1
+                }
+                
+//                    print(person)
+//                    print("++++++++++++++++++++++")
+            }
+        }
+        else if (movie.mediaType == "TV")
+        {
+            
+            let url = URL(string: "https://api.themoviedb.org/3/tv/" + movie.id + "/credits")!
+            var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
+            let queryItems: [URLQueryItem] = [
+              URLQueryItem(name: "language", value: "en-US"),
+            ]
+            components.queryItems = components.queryItems.map { $0 + queryItems } ?? queryItems
+
+            var request = URLRequest(url: components.url!)
+            request.httpMethod = "GET"
+            request.timeoutInterval = 10
+            request.allHTTPHeaderFields = [
+              "accept": "application/json",
+              "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+            ]
+
+            var siteData = ""
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                siteData = String(decoding: data, as: UTF8.self)
+            } catch {
+                print("fuck off")
+            }
+            
+            let searchItemsText = siteData.components(separatedBy: "{\"adult\":")
+            var count = 3
+            for person in searchItemsText.dropFirst()
+            {
+//                    let fixedMovie = person.replacing("\n", with: "")]
+                if(person.contains("\"known_for_department\":\"Acting\"") && count > 0)
+                {
+                    let startActor = person.range(of: "\"name\":\"")!.upperBound
+                    let endActor = person.suffix(from: startActor).range(of: "\",\"")!.lowerBound
+                    let rangeActor = startActor..<endActor
+                    tmpMovie.actors.append(person[rangeActor])
+//                        print(person[rangeActor])
+                    
+                    let startCharacter = person.range(of: "\"character\":\"")!.upperBound
+                    let endCharacter = person.suffix(from: startCharacter).range(of: "\",\"")!.lowerBound
+                    let rangeCharacter = startCharacter..<endCharacter
+                    tmpMovie.characters.append(person[rangeCharacter])
+//                        print(person[rangeCharacter])
+                    count=count-1
+                }
+                
+//                    print(person)
+//                    print("++++++++++++++++++++++")
+            }
+        }
+        
+//            return tmpMovie
+//            print(siteData)
+        return tmpMovie
+    }
+    
+    func searchWhereToWatch(movie: Movie) async -> Movie {
+        var tmpMovie = movie
+        
+        let url = URL(string: "https://api.themoviedb.org/3/" + movie.mediaType.lowercased() + "/" + movie.id + "/watch/providers")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.timeoutInterval = 10
+        request.allHTTPHeaderFields = [
+          "accept": "application/json",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZTA1MDViMWE2Yjg4MGFmOWE1M2JiNTIyMTNlNjA4YSIsIm5iZiI6MTc0MDE4OTk2NS44MDgsInN1YiI6IjY3YjkzMTBkZDM2MzE2OTQ2NjQ2NDMxZiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.AXjW2KApOE0a3uNlz3RHZ8V3my5uRsG1-cZiMia8hcY"
+        ]
+
+        var siteData = ""
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            siteData = String(decoding: data, as: UTF8.self)
+        } catch {
+            print("fuck off")
+        }
+        siteData = siteData.replacingOccurrences(of: "\n", with: "")
+        
+//        print(siteData)
+
+        if(siteData.range(of: "\"US\":{") != nil){
+            let startUS = siteData.range(of: "\"US\":{")!.upperBound
+            let endUS = siteData.suffix(from: startUS).range(of: "},\"")!.lowerBound
+            let rangeUS = startUS..<endUS
+            let USdata = siteData[rangeUS]
+            //        print(siteData[rangeUS])
+            
+            var dataDictionary = [Substring: [Substring]]()
+            var title: Substring = ""
+            var provider: Substring = ""
+            let USdataType = USdata.split(separator: "],")
+            for watchData in USdataType {
+                let USdataProvider = watchData.split(separator: "{")
+                for providerData in USdataProvider {
+                    // Find the first match in the source string
+                    if let match = providerData.firstMatch(of: /"([A-z]*)":\[/) {
+                        (_, title) = match.output
+                        dataDictionary[title] = []
+                    }
+                    else if let match = providerData.firstMatch(of: /"provider_name":"(.*)",/) {
+                        (_, provider) = match.output
+                        dataDictionary[title]!.append(provider)
+                    }
+                    else {
+                        print("shouldnt be here")
+                    }
+                }
+            }
+            tmpMovie.whereToWatch = dataDictionary
+        }
+        
+        return tmpMovie
     }
 }
 

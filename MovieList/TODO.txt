@@ -1,9 +1,7 @@
 
 add more details button to add screen
+- hold action to make picture bigger
 
 add error check on load from file - delete entries that arent good
 
-more details on detail view
-- id ?
-- where to watch
-- better popularity
+add average runtime for tv shows = runtime

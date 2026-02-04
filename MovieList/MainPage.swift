@@ -69,9 +69,10 @@ struct MainPage: View {
                     }
                     
                     let movieFromFile = movieFromFile.components(separatedBy: "*$*@*")
-                    print(movieFromFile)
+//                    print(movieFromFile)
                     
-                    let newMovie = Movie(mediaType: movieFromFile[0], title: Substring(movieFromFile[1]), id: Substring(movieFromFile[2]), overview: Substring(movieFromFile[3]), genreIds: Substring(movieFromFile[4]), release: Substring(movieFromFile[5]), poster: Substring(movieFromFile[6]), backdrop: Substring(movieFromFile[7]), popularity: Substring(movieFromFile[8]))
+//                    let newMovie = Movie(mediaType: movieFromFile[0], title: Substring(movieFromFile[1]), id: Substring(movieFromFile[2]), overview: Substring(movieFromFile[3]), genreIds: Substring(movieFromFile[4]), release: Substring(movieFromFile[5]), poster: Substring(movieFromFile[6]), backdrop: Substring(movieFromFile[7]), popularity: Substring(movieFromFile[8]))
+                    let newMovie = Movie(mediaType: movieFromFile[0], title: Substring(movieFromFile[1]), id: Substring(movieFromFile[2]), overview: Substring(movieFromFile[3]), genreIds: Substring(movieFromFile[4]), release: Substring(movieFromFile[5]), poster: Substring(movieFromFile[6]), backdrop: Substring(movieFromFile[7]), popularity: Substring(movieFromFile[8]), voteAverage: Substring(movieFromFile[9]), voteCount: Substring(movieFromFile[10]), director: Substring(movieFromFile[11]), actors: arrayFromString(string: movieFromFile[12]), characters: arrayFromString(string: movieFromFile[13]), runtime: Substring(movieFromFile[14]), seasons: Substring(movieFromFile[15]), episodes: Substring(movieFromFile[16]), whereToWatch: dictFromString(string: movieFromFile[17]), budget: Substring(movieFromFile[18]), revenue: Substring(movieFromFile[19]))
 //                    let newMovie = Movie()
                     sharedMovies.allMovies.append(newMovie)
                 }

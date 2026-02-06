@@ -6,7 +6,6 @@ add error check on load from file - delete entries that arent good
 
 make details looks nice
 - css type stuff
-- make providers be - free, flatrate, rent, buy, ads
 - add logos to watch providers
 
 

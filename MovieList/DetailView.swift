@@ -157,12 +157,12 @@ struct DetailView: View {
 //                        let _ = print(providersString)
                         if(providersString != "{}") {
 //                            let _ = print(types.count)
-                            Text("Watch Providers:")
+                            Text("Where To Watch:")
                                 .font(.headline)
                             
                             WhereToWatchView(geometry: geometry, providersString: providersString)
                         } else {
-                            Text("Watch Providers: None that I know of ;(")
+                            Text("Where To Watch: None that I know of ;(")
                                 .font(.headline)
                         }
                     }

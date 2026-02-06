@@ -156,26 +156,11 @@ struct DetailView: View {
                         let providersString = movie.getWhereToWatchDisplayFormat()
 //                        let _ = print(providersString)
                         if(providersString != "{}") {
-                            var types: [String] {
-                                providersString.split(separator: "\n").map(String.init)
-                            }
 //                            let _ = print(types.count)
                             Text("Watch Providers:")
                                 .font(.headline)
                             
-                            ForEach(types, id: \.self) { type in
-                                var splitTypes: [String] {
-                                    type.split(separator: ",,").map(String.init)
-                                }
-                                HStack {
-                                    Text("\(splitTypes[0].uppercased()): ")
-                                        .font(.headline)
-                                    ScrollView(.horizontal) {
-                                        Text("\(splitTypes[1])")
-                                            .font(.headline)
-                                    }
-                                }
-                            }
+                            WhereToWatchView(geometry: geometry, providersString: providersString)
                         } else {
                             Text("Watch Providers: None that I know of ;(")
                                 .font(.headline)
@@ -204,6 +189,93 @@ struct DetailView: View {
         }
         
         return "$" + result
+    }
+}
+
+struct WhereToWatchView: View {
+    let geometry: GeometryProxy
+    let providersString: String
+    
+    var body: some View {
+        var types: [String] {
+            providersString.split(separator: "\n").map(String.init)
+        }
+        
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("free")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("flatrate")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("rent")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("buy")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(!type.contains("free") && !type.contains("flatrate") && !type.contains("rent") && !type.contains("buy")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
     }
 }
 

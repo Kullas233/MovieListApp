@@ -1,5 +1,5 @@
 
-add more details button to add screen
+add button to add list to pull up details screen
 - hold action to make picture bigger
 
 add error check on load from file - delete entries that arent good
@@ -11,6 +11,7 @@ make details looks nice
 - make budget be formatted as $ amount
 - make providers be - free, flatrate, rent, buy, ads
 - rearrange
+- add logos to watch providers
 
 
 Couple Actors and Characters to scroll together

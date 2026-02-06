@@ -2,6 +2,34 @@ import SwiftUI
 import Foundation
 import SDWebImageSwiftUI
 
+// string[x] Substring extension
+extension String {
+
+    var length: Int {
+        return count
+    }
+
+    subscript (i: Int) -> String {
+        return self[i ..< i + 1]
+    }
+
+    func substring(fromIndex: Int) -> String {
+        return self[min(fromIndex, length) ..< length]
+    }
+
+    func substring(toIndex: Int) -> String {
+        return self[0 ..< max(0, toIndex)]
+    }
+
+    subscript (r: Range<Int>) -> String {
+        let range = Range(uncheckedBounds: (lower: max(0, min(length, r.lowerBound)),
+                                            upper: min(length, max(0, r.upperBound))))
+        let start = index(startIndex, offsetBy: range.lowerBound)
+        let end = index(start, offsetBy: range.upperBound - range.lowerBound)
+        return String(self[start ..< end])
+    }
+}
+
 struct DetailView: View {
     let movie: Movie // Non-editable title
     
@@ -29,11 +57,29 @@ struct DetailView: View {
                         Text("Genre: \(movie.getGenres())")
                             .font(.headline)
                         
-                        Text("Release Date: \(movie.release)")
-                            .font(.headline)
+                        if(movie.release != "") {
+                            let date = movie.release.split(separator: "-")
+                            Text("Release Date: \(date[1])/\(date[2])/\(date[0])")
+                                .font(.headline)
+                        }
                         
-                        Text("Popularity: \(movie.popularity)")
-                            .font(.headline)
+                        if(movie.runtime != "[]") {
+                            let hours: Int = Int(movie.runtime)!/60
+                            let mins: Int = Int(movie.runtime)!%60
+                            switch hours {
+                                case 0:
+                                    Text("Runtime: \(mins) minutes")
+                                        .font(.headline)
+                                case 1:
+                                    Text("Runtime: \(hours) hour \(mins) minutes")
+                                        .font(.headline)
+                                case 2...:
+                                    Text("Runtime: \(hours) hours \(mins) minutes")
+                                        .font(.headline)
+                                default:
+                                    let _ = print("negative runtime?")
+                            }
+                        }
                         
                         Text("Description:")
                             .font(.headline)
@@ -41,12 +87,6 @@ struct DetailView: View {
                         Text("\(movie.overview)")
                         
                         Divider()
-                        
-                        Text("Vote Average: \(movie.voteAverage)")
-                            .font(.headline)
-                        
-                        Text("Vote Count: \(movie.voteCount)")
-                            .font(.headline)
                         
                         if(movie.mediaType == "Movie") {
                             Text("Director: \(movie.director)")
@@ -76,10 +116,7 @@ struct DetailView: View {
                             }
                         }
                         
-                        if(movie.runtime != "[]") {
-                            Text("Runtime: \(movie.runtime)")
-                                .font(.headline)
-                        }
+                        Divider()
                         
                         if(movie.seasons != "") {
                             Text("# of Season: \(movie.seasons)")
@@ -92,14 +129,27 @@ struct DetailView: View {
                         }
                         
                         if(movie.budget != "") {
-                            Text("Budget: \(movie.budget)")
+                            Text("Budget: \(makeMoneyString(money: movie.budget))")
                                 .font(.headline)
                         }
                             
                         if(movie.revenue != "") {
-                            Text("Revenue: \(movie.revenue)")
+                            Text("Revenue: \(makeMoneyString(money: movie.revenue))")
                                 .font(.headline)
                         }
+                        
+                        Divider()
+                        
+                        Text("TMDB User Rating: \(Int(Double(movie.voteAverage)!*10))%")
+                            .font(.headline)
+                        
+                        Text("Vote Count: \(movie.voteCount)")
+                            .font(.headline)
+                        
+                        let formattedPopularity: Double = (Double(movie.popularity)! * 100).rounded() / 100
+                        let formattedPopularityStr = String(format: "%.2f", formattedPopularity)
+                        Text("Popularity: \(formattedPopularityStr)")
+                            .font(.headline)
                         
                         Divider()
                         
@@ -137,6 +187,23 @@ struct DetailView: View {
                 .frame(maxWidth: geometry.size.width, alignment: .center)
             }
         }
+    }
+    
+    private func makeMoneyString(money: Substring) -> String {
+        var result = ""
+        let moneyStr = String(money)
+        var count = 0
+        
+        for x in (0...moneyStr.count-1).reversed() {
+            if count == 3 {
+                count = 0
+                result = "," + result
+            }
+            result = moneyStr[x] + result
+            count+=1
+        }
+        
+        return "$" + result
     }
 }
 

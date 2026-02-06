@@ -170,6 +170,20 @@ struct Movie: Identifiable, Hashable {
         }
         return returnString
     }
+    
+    func getWhereToWatchDisplayFormat() -> String {
+        var result = ""
+        for (title, array) in whereToWatch {
+            result += title + ",,"
+            for provider in array {
+                result += provider + ", "
+            }
+
+            result = String(result[..<result.index(result.endIndex, offsetBy: -2)])
+            result += "\n"
+        }
+        return result
+    }
 }
 
 func arrayFromString(string: String) -> [Substring] {

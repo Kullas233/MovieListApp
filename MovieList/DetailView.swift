@@ -2,19 +2,36 @@ import SwiftUI
 import Foundation
 import SDWebImageSwiftUI
 
+// string[x] Substring extension
+extension String {
+
+    var length: Int {
+        return count
+    }
+
+    subscript (i: Int) -> String {
+        return self[i ..< i + 1]
+    }
+
+    func substring(fromIndex: Int) -> String {
+        return self[min(fromIndex, length) ..< length]
+    }
+
+    func substring(toIndex: Int) -> String {
+        return self[0 ..< max(0, toIndex)]
+    }
+
+    subscript (r: Range<Int>) -> String {
+        let range = Range(uncheckedBounds: (lower: max(0, min(length, r.lowerBound)),
+                                            upper: min(length, max(0, r.upperBound))))
+        let start = index(startIndex, offsetBy: range.lowerBound)
+        let end = index(start, offsetBy: range.upperBound - range.lowerBound)
+        return String(self[start ..< end])
+    }
+}
+
 struct DetailView: View {
     let movie: Movie // Non-editable title
-    @State private var imdbId: String = "" // Holds the input for the link
-    @State private var mdId: Int32 = -1 // Holds the input for the link
-    @State private var savedId: String? // Stores the saved link
-    
-    // Placeholder IMDb-like information
-//    @State private var Title: String = "N/A"
-//    @State private var Genre: String = "N/A"
-//    @State private var ReleaseDate: String = "N/A"
-//    @State private var Popularity: String = "N/A"
-//    @State private var description: Substring = "N/A"
-//    @State private var ImageURL: String = "N/A"
     
     var body: some View {
         VStack(alignment: .center) {
@@ -40,11 +57,29 @@ struct DetailView: View {
                         Text("Genre: \(movie.getGenres())")
                             .font(.headline)
                         
-                        Text("Release Date: \(movie.release)")
-                            .font(.headline)
+                        if(movie.release != "") {
+                            let date = movie.release.split(separator: "-")
+                            Text("Release Date: \(date[1])/\(date[2])/\(date[0])")
+                                .font(.headline)
+                        }
                         
-                        Text("Popularity: \(movie.popularity)")
-                            .font(.headline)
+                        if(movie.runtime != "[]") {
+                            let hours: Int = Int(movie.runtime)!/60
+                            let mins: Int = Int(movie.runtime)!%60
+                            switch hours {
+                                case 0:
+                                    Text("Runtime: \(mins) minutes")
+                                        .font(.headline)
+                                case 1:
+                                    Text("Runtime: \(hours) hour \(mins) minutes")
+                                        .font(.headline)
+                                case 2...:
+                                    Text("Runtime: \(hours) hours \(mins) minutes")
+                                        .font(.headline)
+                                default:
+                                    let _ = print("negative runtime?")
+                            }
+                        }
                         
                         Text("Description:")
                             .font(.headline)
@@ -52,12 +87,6 @@ struct DetailView: View {
                         Text("\(movie.overview)")
                         
                         Divider()
-                        
-                        Text("Vote Average: \(movie.voteAverage)")
-                            .font(.headline)
-                        
-                        Text("Vote Count: \(movie.voteCount)")
-                            .font(.headline)
                         
                         if(movie.mediaType == "Movie") {
                             Text("Director: \(movie.director)")
@@ -69,16 +98,25 @@ struct DetailView: View {
                             let _ = print("person")
                         }
                         
-                        Text("Actors: \(movie.varToString(array: movie.actors))")
-                            .font(.headline)
-                        
-                        Text("Characters: \(movie.varToString(array: movie.characters))")
-                            .font(.headline)
-                        
-                        if(movie.runtime != "[]") {
-                            Text("Runtime: \(movie.runtime)")
+                        HStack {
+                            Text("Actors: ")
                                 .font(.headline)
+                            ScrollView(.horizontal) {
+                                Text("\(movie.varToString(array: movie.actors))")
+                                    .font(.headline)
+                            }
                         }
+                        
+                        HStack {
+                            Text("Characters: ")
+                                .font(.headline)
+                            ScrollView(.horizontal) {
+                                Text("\(movie.varToString(array: movie.characters))")
+                                    .font(.headline)
+                            }
+                        }
+                        
+                        Divider()
                         
                         if(movie.seasons != "") {
                             Text("# of Season: \(movie.seasons)")
@@ -90,47 +128,155 @@ struct DetailView: View {
                                 .font(.headline)
                         }
                         
-                        let providersString = movie.varToString(dictionary: movie.whereToWatch)
-                        if(providersString != "{}") {
-                            Text("Watch Providers: \(providersString)")
-                                .font(.headline)
-                        } else {
-                            Text("Watch Providers: None that I know of ;(")
-                                .font(.headline)
-                        }
-                        
                         if(movie.budget != "") {
-                            Text("Budget: \(movie.budget)")
+                            Text("Budget: \(makeMoneyString(money: movie.budget))")
                                 .font(.headline)
                         }
                             
                         if(movie.revenue != "") {
-                            Text("Revenue: \(movie.revenue)")
+                            Text("Revenue: \(makeMoneyString(money: movie.revenue))")
                                 .font(.headline)
                         }
-                                                
-//                        TextField(Description, text: $description, axis: .vertical)
+                        
+                        Divider()
+                        
+                        Text("TMDB User Rating: \(Int(Double(movie.voteAverage)!*10))%")
+                            .font(.headline)
+                        
+                        Text("Vote Count: \(movie.voteCount)")
+                            .font(.headline)
+                        
+                        let formattedPopularity: Double = (Double(movie.popularity)! * 100).rounded() / 100
+                        let formattedPopularityStr = String(format: "%.2f", formattedPopularity)
+                        Text("Popularity: \(formattedPopularityStr)")
+                            .font(.headline)
+                        
+                        Divider()
+                        
+                        let providersString = movie.getWhereToWatchDisplayFormat()
+//                        let _ = print(providersString)
+                        if(providersString != "{}") {
+//                            let _ = print(types.count)
+                            Text("Where To Watch:")
+                                .font(.headline)
+                            
+                            WhereToWatchView(geometry: geometry, providersString: providersString)
+                        } else {
+                            Text("Where To Watch: None that I know of ;(")
+                                .font(.headline)
+                        }
                     }
                     .padding()
                     .frame(alignment: .center)
                 }
                 .frame(maxWidth: geometry.size.width, alignment: .center)
-//                .onAppear {
-//                    loadMovieDetails()
-//                }
             }
         }
     }
-    // Function to simulate loading IMDb-like details
-//    private func loadMovieDetails() {
-//        // In a real app, you would fetch this data from an API like IMDb or TMDb.
-//        ImageURL = "https://image.tmdb.org/t/p/original"+String(movie.backdrop)
-//        Title = String(movie.title)
-//        Genre = String(movie.getGenres())
-//        ReleaseDate = String(movie.release)
-//        Popularity = String(movie.popularity)
-//        Description = String(movie.overview)
-//    }
+    
+    private func makeMoneyString(money: Substring) -> String {
+        var result = ""
+        let moneyStr = String(money)
+        var count = 0
+        
+        for x in (0...moneyStr.count-1).reversed() {
+            if count == 3 {
+                count = 0
+                result = "," + result
+            }
+            result = moneyStr[x] + result
+            count+=1
+        }
+        
+        return "$" + result
+    }
+}
+
+struct WhereToWatchView: View {
+    let geometry: GeometryProxy
+    let providersString: String
+    
+    var body: some View {
+        var types: [String] {
+            providersString.split(separator: "\n").map(String.init)
+        }
+        
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("free")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("flatrate")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("rent")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(type.contains("buy")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+        ForEach(types, id: \.self) { type in
+            var splitTypes: [String] {
+                type.split(separator: ",,").map(String.init)
+            }
+            if(!type.contains("free") && !type.contains("flatrate") && !type.contains("rent") && !type.contains("buy")) {
+                HStack {
+                    Text("\(splitTypes[0].uppercased()): ")
+                        .font(.headline)
+                    ScrollView(.horizontal) {
+                        Text("\(splitTypes[1])")
+                            .font(.headline)
+                    }
+                }
+            }
+        }
+    }
 }
 
 // Preview for both platforms

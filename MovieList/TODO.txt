@@ -8,6 +8,7 @@ make details looks nice
 - css type stuff
 - add logos to watch providers
 
+add feature to mark things as watched
 
 Couple Actors and Characters to scroll together
 

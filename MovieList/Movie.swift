@@ -136,6 +136,46 @@ struct Movie: Identifiable, Hashable {
         return result
     }
     
+    func getActorCharacterStrings(aarray: [Substring], carray: [Substring]) -> (Substring, Substring) {
+        
+        if(aarray.count != carray.count)
+        {
+            print("DEFAULT")
+            return (varToString(array: aarray), varToString(array: carray))
+        }
+        
+        var actorResult = ""
+        var characterResult = ""
+        
+        for i in 0..<aarray.count {
+            actorResult += aarray[i] + ", "
+            characterResult += carray[i] + ", "
+            
+            print(actorResult.count)
+            print(characterResult.count)
+            while(actorResult.count < characterResult.count) {
+                actorResult += " "
+            }
+            while(actorResult.count > characterResult.count) {
+                characterResult += " "
+            }
+            print(actorResult.count)
+            print(characterResult.count)
+            print("///////////////////////")
+        }
+        
+//        for (actor, character) in zip(actors, characters) {
+//            actorResult = actorResult + String(actor)
+////            characterResult += character
+//            
+//            while(actor.count < character.count) {
+//                
+//            }
+//        }
+        
+        return (Substring(actorResult), Substring(characterResult))
+    }
+    
     func getGenres() -> String {
         let genreInts = genreIds.split(separator: ",")
         var Genres: [String : String]

@@ -32,6 +32,7 @@ extension String {
 
 struct DetailView: View {
     let movie: Movie // Non-editable title
+    @State private var sharedScrollTarget: Int?
     
     var body: some View {
         VStack(alignment: .center) {
@@ -98,23 +99,50 @@ struct DetailView: View {
                             let _ = print("person")
                         }
                         
-                        HStack {
-                            Text("Actors: ")
-                                .font(.headline)
-                            ScrollView(.horizontal) {
-                                Text("\(movie.varToString(array: movie.actors))")
-                                    .font(.headline)
-                            }
+                        
+                        var actors: [String] {
+                            movie.actors.split(separator: "\n").map(String.init)
+                        }
+                        var characters: [String] {
+                            movie.characters.split(separator: "\n").map(String.init)
                         }
                         
                         HStack {
-                            Text("Characters: ")
-                                .font(.headline)
-                            ScrollView(.horizontal) {
-                                Text("\(movie.varToString(array: movie.characters))")
+                            VStack {
+                                Text("Actors: ")
+                                    .font(.headline)
+                                Text("Characters: ")
                                     .font(.headline)
                             }
+                            ScrollView(.horizontal) {
+                                ForEach(Array(zip(actors, characters)), id: \.0) { (actor, character) in
+                                    VStack {
+                                        Text("\(actor)), ")
+                                            .font(.headline)
+                                        Text("\(character)), ")
+                                            .font(.headline)
+                                    }
+                                }
+                            }
                         }
+                        
+//                        HStack {
+//                            Text("Actors: ")
+//                                .font(.headline)
+//                            ScrollView(.horizontal) {
+//                                Text("\(movie.varToString(array: movie.actors))")
+//                                    .font(.headline)
+//                            }
+//                        }
+//                        
+//                        HStack {
+//                            Text("Characters: ")
+//                                .font(.headline)
+//                            ScrollView(.horizontal) {
+//                                Text("\(movie.varToString(array: movie.characters))")
+//                                    .font(.headline)
+//                            }
+//                        }
                         
                         Divider()
                         
